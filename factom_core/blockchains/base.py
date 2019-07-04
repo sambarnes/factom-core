@@ -6,11 +6,15 @@ class BaseBlockchain:
     The base class for all Blockchain objects
     """
     network_id = None  # type: bytes
+    vms = None  # type: list
 
     def __init__(self) -> None:
         raise NotImplementedError("Blockchain classes must implement this method")
 
     def seal_minute(self) -> None:
+        raise NotImplementedError("Blockchain classes must implement this method")
+
+    def rotate_vms(self) -> None:
         raise NotImplementedError("Blockchain classes must implement this method")
 
     def seal_block(self) -> None:
@@ -46,11 +50,27 @@ class Blockchain(BaseBlockchain):
             raise ValueError(
                 "The Blockchain class must be instantiated with a `network_id` bytes object of length 4"
             )
+        if not isinstance(self.vms, list) or len(self.network_id) == 0:
+            raise ValueError(
+                "The Blockchain class must be instantiated with a `vms` list of length > 1"
+            )
 
     def seal_minute(self) -> None:
+        """
+        Finalize the current block minute, inserting minute markers where applicable.
+        """
+        pass
+
+    def rotate_vms(self) -> None:
+        """
+        Rotate the responsibilities of the VM set (if more than one VM).
+        """
         pass
 
     def seal_block(self) -> None:
+        """
+        Finalize the current block.q
+        """
         pass
 
     #
