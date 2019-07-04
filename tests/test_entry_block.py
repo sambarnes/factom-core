@@ -48,12 +48,12 @@ class TestEntryBlock(unittest.TestCase):
 
         block = EntryBlock.unmarshal(bytes.fromhex(expected_keymr), bytes.fromhex(TestEntryBlock.test_data))
         assert block.keymr.hex() == expected_keymr
-        assert block.chain_id.hex() == expected_chain_id
-        assert block.body_mr.hex() == expected_body_mr
-        assert block.prev_keymr.hex() == expected_prev_keymr
-        assert block.prev_full_hash.hex() == expected_prev_full_hash
-        assert block.sequence == expected_sequence
-        assert block.height == expected_height
+        assert block.header.chain_id.hex() == expected_chain_id
+        assert block.header.body_mr.hex() == expected_body_mr
+        assert block.header.prev_keymr.hex() == expected_prev_keymr
+        assert block.header.prev_full_hash.hex() == expected_prev_full_hash
+        assert block.header.sequence == expected_sequence
+        assert block.header.height == expected_height
         for minute, entry_hashes in block.entry_hashes.items():
             for i, entry_hash in enumerate(entry_hashes):
                 assert entry_hash.hex() == expected_entry_hashes[minute][i]
