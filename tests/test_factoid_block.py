@@ -37,11 +37,12 @@ class TestFactoidBlock(unittest.TestCase):
 
         block = FactoidBlock.unmarshal(bytes.fromhex(expected_keymr), bytes.fromhex(TestFactoidBlock.test_data))
         assert block.keymr.hex() == expected_keymr
-        assert block.body_mr.hex() == expected_body_mr
-        assert block.prev_keymr.hex() == expected_prev_keymr
-        assert block.prev_ledger_keymr.hex() == expected_prev_ledger_keymr
-        assert block.ec_exchange_rate == expected_ec_exchange_rate
-        assert block.height == expected_height
+        assert block.header.body_mr.hex() == expected_body_mr
+        assert block.header.prev_keymr.hex() == expected_prev_keymr
+        assert block.header.prev_ledger_keymr.hex() == expected_prev_ledger_keymr
+        assert block.header.ec_exchange_rate == expected_ec_exchange_rate
+        assert block.header.height == expected_height
+        assert block.header.transaction_count == expected_transaction_count
         transaction_count = 0
         for minute, transactions in block.transactions.items():
             transaction_count += len(transactions)
