@@ -80,12 +80,13 @@ class TestDirectoryBlock(unittest.TestCase):
         ]
         block = DirectoryBlock.unmarshal(bytes.fromhex(expected_keymr), bytes.fromhex(TestDirectoryBlock.test_data))
         assert block.keymr.hex() == expected_keymr
-        assert block.network_id.hex() == expected_network_id
-        assert block.body_mr.hex() == expected_body_mr
-        assert block.prev_keymr.hex() == expected_prev_keymr
-        assert block.prev_full_hash.hex() == expected_prev_full_hash
-        assert block.timestamp == expected_timestamp
-        assert block.height == expected_height
+        assert block.header.network_id.hex() == expected_network_id
+        assert block.header.body_mr.hex() == expected_body_mr
+        assert block.header.prev_keymr.hex() == expected_prev_keymr
+        assert block.header.prev_full_hash.hex() == expected_prev_full_hash
+        assert block.header.timestamp == expected_timestamp
+        assert block.header.height == expected_height
+        assert block.header.block_count == len(expected_entry_blocks) + 3
         assert block.admin_block_lookup_hash.hex() == expected_admin_block_lookup_hash
         assert block.entry_credit_block_header_hash.hex() == expected_entry_credit_block_header_hash
         assert block.factoid_block_keymr.hex() == expected_factoid_block_keymr
