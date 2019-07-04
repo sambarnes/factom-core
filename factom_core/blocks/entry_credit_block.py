@@ -6,22 +6,73 @@ from factom_core.block_elements.entry_commit import EntryCommit
 from factom_core.utils import varint
 
 
-class EntryCreditBlock:
+class EntryCreditBlockHeader:
 
     CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000c")
 
     def __init__(self, body_hash: bytes, prev_header_hash: bytes, prev_full_hash: bytes, height: int,
-                 header_expansion_area: bytes, objects: list, **kwargs):
-        # Required fields. Must be in every EntryBlock
+                 expansion_area: bytes, object_count: int, body_size: int):
         self.body_hash = body_hash
         self.prev_header_hash = prev_header_hash
         self.prev_full_hash = prev_full_hash
         self.height = height
-        self.header_expansion_area = header_expansion_area
+        self.expansion_area = expansion_area
+        self.object_count = object_count
+        self.body_size = body_size
+
+    def marshal(self) -> bytes:
+        buf = bytearray()
+        buf.extend(EntryCreditBlockHeader.CHAIN_ID)
+        buf.extend(self.body_hash)
+        buf.extend(self.prev_header_hash)
+        buf.extend(self.prev_full_hash)
+        buf.extend(struct.pack('>I', self.height))
+        buf.extend(varint.encode(len(self.expansion_area)))
+        buf.extend(self.expansion_area)
+        buf.extend(struct.pack('>Q', self.object_count))
+        buf.extend(struct.pack('>Q', self.body_size))
+        return bytes(buf)
+
+    @classmethod
+    def unmarshal(cls, raw: bytes):
+        h, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return h
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
+        chain_id, data = raw[:32], raw[32:]
+        assert chain_id == EntryCreditBlockHeader.CHAIN_ID
+        body_hash, data = data[:32], data[32:]
+        prev_header_hash, data = data[:32], data[32:]
+        prev_full_hash, data = data[:32], data[32:]
+        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+
+        header_expansion_size, data = varint.decode(data)
+        header_expansion_area, data = data[:header_expansion_size], data[header_expansion_size:]
+
+        object_count, data = struct.unpack('>Q', data[:8])[0], data[8:]
+        body_size, data = struct.unpack('>Q', data[:8])[0], data[8:]
+
+        return EntryCreditBlockHeader(
+            body_hash=body_hash,
+            prev_header_hash=prev_header_hash,
+            prev_full_hash=prev_full_hash,
+            height=height,
+            expansion_area=header_expansion_area,
+            object_count=object_count,
+            body_size=body_size
+        ), data
+
+
+class EntryCreditBlock:
+
+    def __init__(self, header: EntryCreditBlockHeader, objects: dict, **kwargs):
+        # Required fields. Must be in every EntryBlock
+        self.header = header
         self.objects = objects
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
-
 
     def marshal(self):
         """Marshals the directory block according to the byte-level representation shown at
@@ -31,36 +82,25 @@ class EntryCreditBlock:
         next entry-credit block.
         """
         buf = bytearray()
-        buf.extend(EntryCreditBlock.CHAIN_ID)
-        buf.extend(self.body_hash)
-        buf.extend(self.prev_header_hash)
-        buf.extend(self.prev_full_hash)
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(varint.encode(len(self.header_expansion_area)))
-        buf.extend(self.header_expansion_area)
+        buf.extend(self.header.marshal())
         object_count = 0
-        body_buf = bytearray()
         for minute, objects in self.objects.items():
             object_count += len(objects) + 1
             for o in objects:
                 if isinstance(object, int):
-                    body_buf.append(0x00)
-                    body_buf.append(o)
+                    buf.append(0x00)
+                    buf.append(o)
                 elif isinstance(o, ChainCommit):
-                    body_buf.extend(ChainCommit.ECID)
-                    body_buf.extend(o.marshal())
+                    buf.extend(ChainCommit.ECID)
+                    buf.extend(o.marshal())
                 elif isinstance(o, EntryCommit):
-                    body_buf.extend(EntryCommit.ECID)
-                    body_buf.extend(o.marshal())
+                    buf.extend(EntryCommit.ECID)
+                    buf.extend(o.marshal())
                 elif isinstance(o, BalanceIncrease):
-                    body_buf.extend(BalanceIncrease.ECID)
-                    body_buf.extend(o.marshal())
-            body_buf.append(0x01)
-            body_buf.append(minute)
-
-        buf.extend(struct.pack('>Q', object_count))
-        buf.extend(struct.pack('>Q', len(body_buf)))
-        buf.extend(body_buf)
+                    buf.extend(BalanceIncrease.ECID)
+                    buf.extend(o.marshal())
+            buf.append(0x01)
+            buf.append(minute)
         return bytes(buf)
 
     @classmethod
@@ -73,22 +113,12 @@ class EntryCreditBlock:
         EntryCreditBlock created will not include contextual metadata, such as timestamp or the pointer to the
         next entry-credit block.
         """
-        chain_id, data = raw[:32], raw[32:]
-        assert chain_id == EntryCreditBlock.CHAIN_ID
-        body_hash, data = data[:32], data[32:]
-        prev_header_hash, data = data[:32], data[32:]
-        prev_full_hash, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-
-        header_expansion_size, data = varint.decode(data)
-        header_expansion_area, data = data[:header_expansion_size], data[header_expansion_size:]
-
-        object_count, data = struct.unpack('>Q', data[:8])[0], data[8:]
-        body_size, data = struct.unpack('>Q', data[:8])[0], data[8:]
-
+        header, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
+        assert header.body_size == len(data), 'header body size does not match actual body size'
+        # Body
         objects = {}  # map of minute --> objects array
         current_minute_objects = []
-        for i in range(object_count):
+        for i in range(header.object_count):
             ecid, data = data[:1], data[1:]
             if ecid == b'\x00':
                 server_index, data = data[:1], data[1:]
@@ -116,11 +146,7 @@ class EntryCreditBlock:
         assert len(data) == 0, 'Extra bytes remaining!'
 
         return EntryCreditBlock(
-            body_hash=body_hash,
-            prev_header_hash=prev_header_hash,
-            prev_full_hash=prev_full_hash,
-            height=height,
-            header_expansion_area=header_expansion_area,
+            header=header,
             objects=objects
         )
 
@@ -131,5 +157,4 @@ class EntryCreditBlock:
         pass
 
     def __str__(self):
-        return '{}(height={})'.format(self.__class__.__name__, self.height)
-
+        return '{}(height={})'.format(self.__class__.__name__, self.header.height)

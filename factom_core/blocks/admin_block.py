@@ -3,14 +3,61 @@ from factom_core.block_elements.admin_messages import *
 from factom_core.utils import varint
 
 
-class AdminBlock:
+class AdminBlockHeader:
 
     CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000a")
 
-    def __init__(self, back_reference_hash: bytes, height: int, header_expansion_area: bytes, messages: list):
+    def __init__(self, back_reference_hash: bytes, height: int, expansion_area: bytes,
+                 message_count: int, body_size: int):
         self.back_reference_hash = back_reference_hash
         self.height = height
-        self.header_expansion_area = header_expansion_area
+        self.expansion_area = expansion_area
+        self.message_count = message_count
+        self.body_size = body_size
+
+    def marshal(self) -> bytes:
+        buf = bytearray()
+        buf.extend(AdminBlockHeader.CHAIN_ID)
+        buf.extend(self.back_reference_hash)
+        buf.extend(struct.pack('>I', self.height))
+        buf.extend(varint.encode(len(self.expansion_area)))
+        buf.extend(self.expansion_area)
+        buf.extend(struct.pack('>I', self.message_count))
+        buf.extend(struct.pack('>I', self.body_size))
+        return bytes(buf)
+
+    @classmethod
+    def unmarshal(cls, raw: bytes):
+        h, data = AdminBlockHeader.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return h
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
+        chain_id, data = raw[:32], raw[32:]
+        assert chain_id == AdminBlockHeader.CHAIN_ID
+        back_reference_hash, data = data[:32], data[32:]
+        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+
+        expansion_size, data = varint.decode(data)
+        expansion_area, data = data[:expansion_size], data[expansion_size:]
+        # TODO: unmarshal header expansion area
+
+        message_count, data = struct.unpack('>I', data[:4])[0], data[4:]
+        body_size, data = struct.unpack('>I', data[:4])[0], data[4:]
+        return AdminBlockHeader(
+            back_reference_hash=back_reference_hash,
+            height=height,
+            expansion_area=expansion_area,
+            message_count=message_count,
+            body_size=body_size
+        ), data
+
+
+class AdminBlock:
+
+    def __init__(self, header: AdminBlockHeader, messages: list):
+        self.header = header
         self.messages = messages
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
@@ -18,19 +65,13 @@ class AdminBlock:
     def __str__(self):
         pass
 
-    def marshal(self):
+    def marshal(self) -> bytes:
         buf = bytearray()
-        buf.extend(AdminBlock.CHAIN_ID)
-        buf.extend(self.back_reference_hash)
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(varint.encode(len(self.header_expansion_area)))
-        buf.extend(self.header_expansion_area)
-        buf.extend(struct.pack('>I', len(self.messages)))
+        buf.extend(self.header.marshal())
         bodybuf = bytearray()
         for message in self.messages:
             bodybuf.append(message.__class__.ADMIN_ID)
             bodybuf.extend(message.marshal())
-        buf.extend(struct.pack('>I', len(bodybuf)))
         buf.extend(bodybuf)
         return bytes(buf)
 
@@ -43,21 +84,12 @@ class AdminBlock:
 
         AdminBlock created will not include contextual metadata, such as timestamp
         """
-        chain_id, data = raw[:32], raw[32:]
-        assert chain_id == AdminBlock.CHAIN_ID
-        back_reference_hash, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-
-        header_expansion_size, data = varint.decode(data)
-        header_expansion_area, data = data[:header_expansion_size], data[header_expansion_size:]
-        # TODO: unmarshal header expansion area
-
-        message_count, data = struct.unpack('>I', data[:4])[0], data[4:]
-        body_size, data = struct.unpack('>I', data[:4])[0], data[4:]
-        assert body_size == len(data)
+        header, data = AdminBlockHeader.unmarshal_with_remainder(raw)
+        if header.body_size != len(data):
+            raise ValueError("Header body size does not match actual body size")
 
         messages = []
-        for i in range(message_count):
+        for i in range(header.message_count):
             admin_id, data = data[0], data[1:]
             assert admin_id <= 0x0E, 'Unsupported Admin message type! ({})'.format(admin_id)
             msg = None
@@ -133,13 +165,11 @@ class AdminBlock:
             if msg is not None:
                 messages.append(msg)
 
-        assert len(messages) == message_count, 'Unexpected message count!'
+        assert len(messages) == header.message_count, 'Unexpected message count!'
         assert len(data) == 0, 'Extra bytes remaining!'
 
         return AdminBlock(
-            back_reference_hash=back_reference_hash,
-            height=height,
-            header_expansion_area=header_expansion_area,
+            header=header,
             messages=messages
         )
 

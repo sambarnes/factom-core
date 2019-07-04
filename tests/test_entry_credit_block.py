@@ -418,10 +418,10 @@ class TestEntryCreditBlock(unittest.TestCase):
             ],
         }
 
-        assert block.body_hash.hex() == expected_body_hash
-        assert block.prev_header_hash.hex() == expected_prev_header_hash
-        assert block.prev_full_hash.hex() == expected_prev_full_hash
-        assert block.height == expected_height
+        assert block.header.body_hash.hex() == expected_body_hash
+        assert block.header.prev_header_hash.hex() == expected_prev_header_hash
+        assert block.header.prev_full_hash.hex() == expected_prev_full_hash
+        assert block.header.height == expected_height
 
         for minute, objects in block.objects.items():
             for i, o in enumerate(objects):
