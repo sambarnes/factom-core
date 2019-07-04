@@ -1,4 +1,4 @@
-from factom_core.blocks import DirectoryBlock
+from factom_core.blocks import DirectoryBlock, DirectoryBlockHeader
 
 
 class BaseBlockchain:
