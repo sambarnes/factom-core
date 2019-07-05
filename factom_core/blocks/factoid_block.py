@@ -68,13 +68,13 @@ class FactoidBlockHeader:
 
 class FactoidBlock:
 
-    def __init__(self, keymr: bytes, header: FactoidBlockHeader, transactions: dict, **kwargs):
+    def __init__(self, header: FactoidBlockHeader, transactions: dict, **kwargs):
         # Required fields. Must be in every FactoidBlock
-        self.keymr = keymr
         self.header = header
         self.transactions = transactions
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
+        self.keymr = b''  # TODO: calculate keymr
 
     def marshal(self):
         """Marshals the factoid block according to the byte-level representation shown at
@@ -91,7 +91,7 @@ class FactoidBlock:
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, keymr: bytes, raw: bytes):
+    def unmarshal(cls, raw: bytes):
         """Returns a new FactoidBlock object, unmarshalling given bytes according to:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-block
 
@@ -124,7 +124,6 @@ class FactoidBlock:
         assert len(data) == 0, 'Extra bytes remaining!'
 
         return FactoidBlock(
-            keymr=keymr,
             header=header,
             transactions=transactions
         )

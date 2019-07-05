@@ -4,14 +4,13 @@ from hashlib import sha256, sha512
 
 
 class Entry:
-    def __init__(self, chain_id: bytes, entry_hash: bytes, external_ids: list, content: bytes, **kwargs):
+    def __init__(self, chain_id: bytes, external_ids: list, content: bytes, **kwargs):
         # Required fields. Must be in every Entry
         self.chain_id = chain_id
-        self.entry_hash = entry_hash
         self.external_ids = external_ids
         self.content = content
         # TODO: assert they're all here
-        assert self.entry_hash == self._calculate_entry_hash(), 'entry_hash does not match external_ids and content'
+        self.entry_hash = self._calculate_entry_hash()
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
         self.directory_block_keymr = kwargs.get('directory_block_keymr')
@@ -55,7 +54,7 @@ class Entry:
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, entry_hash: bytes, raw: bytes):
+    def unmarshal(cls, raw: bytes):
         """Returns a new Entry object, unmarshalling given bytes according to:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry
 
@@ -76,7 +75,6 @@ class Entry:
         content = data  # Leftovers are the entry content
         return Entry(
             chain_id=chain_id,
-            entry_hash=entry_hash,
             external_ids=external_ids,
             content=content
         )
@@ -84,7 +82,7 @@ class Entry:
     def add_context(self, entry_block: EntryBlock):
         self.directory_block_keymr = entry_block.directory_block_keymr
         self.entry_block_keymr = entry_block.keymr
-        self.height = entry_block.height
+        self.height = entry_block.header.height
         # Find what minute this entry appeared in within the entry block
         base_timestamp = entry_block.timestamp
         for minute, entry_hashes in entry_block.entry_hashes.items():

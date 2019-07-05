@@ -52,16 +52,16 @@ class DirectoryBlockHeader:
 
 class DirectoryBlock:
 
-    def __init__(self, keymr: bytes, header: DirectoryBlockHeader, admin_block_lookup_hash: bytes,
+    def __init__(self, header: DirectoryBlockHeader, admin_block_lookup_hash: bytes,
                  entry_credit_block_header_hash:  bytes, factoid_block_keymr:  bytes, entry_blocks: list, **kwargs):
         # Required fields
-        self.keymr = keymr
         self.header = header
-
         self.admin_block_lookup_hash = admin_block_lookup_hash
         self.entry_credit_block_header_hash = entry_credit_block_header_hash
         self.factoid_block_keymr = factoid_block_keymr
         self.entry_blocks = entry_blocks
+        # TODO: assert they're all here
+        self.keymr = b''  # TODO: add keymr calculation
 
         # Optional contextual fields
         self.next_keymr = kwargs.get('next_keymr')
@@ -77,11 +77,11 @@ class DirectoryBlock:
         buf = bytearray()
         buf.append(0x00)
         buf.extend(self.header.marshal())
-        buf.extend(factom_core.blocks.AdminBlock.CHAIN_ID)
+        buf.extend(factom_core.blocks.AdminBlockHeader.CHAIN_ID)
         buf.extend(self.admin_block_lookup_hash)
-        buf.extend(factom_core.blocks.EntryCreditBlock.CHAIN_ID)
+        buf.extend(factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID)
         buf.extend(self.entry_credit_block_header_hash)
-        buf.extend(factom_core.blocks.FactoidBlock.CHAIN_ID)
+        buf.extend(factom_core.blocks.FactoidBlockHeader.CHAIN_ID)
         buf.extend(self.factoid_block_keymr)
         for e_block in self.entry_blocks:
             buf.extend(e_block.get('chain_id'))
@@ -89,7 +89,7 @@ class DirectoryBlock:
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, keymr: bytes, raw: bytes):
+    def unmarshal(cls, raw: bytes):
         """Returns a new DirectoryBlock object, unmarshalling given bytes according to:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#directory-block
 
@@ -102,13 +102,13 @@ class DirectoryBlock:
         header = DirectoryBlockHeader.unmarshal(header_data)
         # Body
         admin_block_chain_id, data = data[:32], data[32:]
-        assert admin_block_chain_id == factom_core.blocks.AdminBlock.CHAIN_ID
+        assert admin_block_chain_id == factom_core.blocks.AdminBlockHeader.CHAIN_ID
         admin_block_lookup_hash, data = data[:32], data[32:]
         entry_credit_block_chain_id, data = data[:32], data[32:]
-        assert entry_credit_block_chain_id == factom_core.blocks.EntryCreditBlock.CHAIN_ID
+        assert entry_credit_block_chain_id == factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID
         entry_credit_block_header_hash, data = data[:32], data[32:]
         factoid_block_chain_id, data = data[:32], data[32:]
-        assert factoid_block_chain_id == factom_core.blocks.FactoidBlock.CHAIN_ID
+        assert factoid_block_chain_id == factom_core.blocks.FactoidBlockHeader.CHAIN_ID
         factoid_block_keymr, data = data[:32], data[32:]
         entry_blocks = []
         for i in range(header.block_count - 3):
@@ -118,7 +118,6 @@ class DirectoryBlock:
         assert len(data) == 0, 'Extra bytes remaining!'
 
         return DirectoryBlock(
-            keymr=keymr,
             header=header,
             admin_block_lookup_hash=admin_block_lookup_hash,
             entry_credit_block_header_hash=entry_credit_block_header_hash,
