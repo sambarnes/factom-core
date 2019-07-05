@@ -113,6 +113,12 @@ class EntryCreditBlock:
         EntryCreditBlock created will not include contextual metadata, such as timestamp or the pointer to the
         next entry-credit block.
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
         assert header.body_size == len(data), 'header body size does not match actual body size'
         # Body
@@ -143,12 +149,10 @@ class EntryCreditBlock:
             else:
                 raise ValueError
 
-        assert len(data) == 0, 'Extra bytes remaining!'
-
         return EntryCreditBlock(
             header=header,
             objects=objects
-        )
+        ), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass

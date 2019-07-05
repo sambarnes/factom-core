@@ -98,6 +98,12 @@ class DirectoryBlock:
         DirectoryBlock created will not include contextual metadata, such as anchor information or the pointer to the
         next directory block.
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header_data, data = raw[:DirectoryBlockHeader.LENGTH], raw[DirectoryBlockHeader.LENGTH:]
         header = DirectoryBlockHeader.unmarshal(header_data)
         # Body
@@ -115,7 +121,6 @@ class DirectoryBlock:
             entry_block_chain_id, data = data[:32], data[32:]
             entry_block_keymr, data = data[:32], data[32:]
             entry_blocks.append({'chain_id': entry_block_chain_id, 'keymr': entry_block_keymr})
-        assert len(data) == 0, 'Extra bytes remaining!'
 
         return DirectoryBlock(
             header=header,
@@ -123,7 +128,7 @@ class DirectoryBlock:
             entry_credit_block_header_hash=entry_credit_block_header_hash,
             factoid_block_keymr=factoid_block_keymr,
             entry_blocks=entry_blocks,
-        )
+        ), data
 
     def to_dict(self):
         return {

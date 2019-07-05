@@ -100,6 +100,12 @@ class FactoidBlock:
         FactoidBlock created will not include contextual metadata, such as timestamp or the pointer to the
         next factoid block.
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header, data = FactoidBlockHeader.unmarshal_with_remainder(raw)
         assert header.body_size == len(data), 'header body size does not match actual body size'
         # Body
@@ -121,12 +127,11 @@ class FactoidBlock:
             current_minute_transactions.append(tx)
 
         assert transaction_count == header.transaction_count, 'Unexpected transaction count!'
-        assert len(data) == 0, 'Extra bytes remaining!'
 
         return FactoidBlock(
             header=header,
             transactions=transactions
-        )
+        ), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass

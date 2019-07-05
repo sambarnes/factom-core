@@ -86,6 +86,12 @@ class EntryBlock:
         EntryBlock created will not include contextual metadata, such as timestamp or the pointer to the
         next entry block.
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header_data, data = raw[:EntryBlockHeader.LENGTH], raw[EntryBlockHeader.LENGTH:]
         header = EntryBlockHeader.unmarshal(header_data)
 
@@ -101,12 +107,10 @@ class EntryBlock:
             else:
                 current_minute_entries.append(entry_hash)
 
-        assert len(data) == 0, 'Extra bytes remaining!'
-
         return EntryBlock(
             header=header,
             entry_hashes=entry_hashes,
-        )
+        ), data
 
     def add_context(self, directory_block: DirectoryBlock):
         self.directory_block_keymr = directory_block.keymr
