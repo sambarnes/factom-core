@@ -86,7 +86,7 @@ class ChangeServerKey(Message):
     def marshal(self) -> bytes:
         """
         Marshal the message into the following representation:
-        - first byte is the message type (always 24)
+        - first byte is the message type (always 23)
         - next 6 bytes are a timestamp
         - next 32 bytes are the server's identity chain id
         - next byte is Admin Block Change
