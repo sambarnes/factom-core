@@ -35,10 +35,6 @@ class Message:
         if self.TYPE is None:
             raise ValueError("A Message class must be instantiated with a `TYPE`")
 
-    @property
-    def full_message_hash(self):
-        pass
-
     def leader_execute(self):
         pass
 
