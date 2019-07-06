@@ -43,11 +43,11 @@ class ChainCommit(Message):
 
     TYPE = 5
 
-    def __init__(self, commit: block_elements.ChainCommit, signature: bytes, public_key: bytes):
+    def __init__(self, commit: block_elements.ChainCommit, public_key: bytes, signature: bytes):
         # TODO: type/value assertions
         self.commit = commit
-        self.signature = signature
         self.public_key = public_key
+        self.signature = signature
         super().__init__()
 
     def marshal(self) -> bytes:
@@ -55,16 +55,16 @@ class ChainCommit(Message):
         Marshal the message into the following representation:
         - first byte is the message type (always 5)
         - next bytes are the marshalled Chain Commit object
-        - next 64 bytes are the signature
         - next 32 bytes are the public key
+        - next 64 bytes are the signature
 
         :return: byte representation of the message
         """
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.commit.marshal())
-        buf.extend(self.signature)
         buf.extend(self.public_key)
+        buf.extend(self.signature)
         return bytes(buf)
 
     @classmethod
@@ -77,15 +77,15 @@ class ChainCommit(Message):
         commit, data = block_elements.ChainCommit.unmarshal(data[:commit_size]), data[commit_size:]
 
         if len(data) > 0:  # TODO: found in factomd code, is this actually not signed sometimes?
-            signature, data = data[:64], data[64:]
             public_key, data = data[:32], data[32:]
+            signature, data = data[:64], data[64:]
         else:
             signature, public_key = b'', b''
 
         return ChainCommit(
             commit=commit,
-            signature=signature,
             public_key=public_key,
+            signature=signature,
         )
 
 
@@ -96,11 +96,11 @@ class EntryCommit(Message):
 
     TYPE = 6
 
-    def __init__(self, commit: block_elements.EntryCommit, signature: bytes, public_key: bytes):
+    def __init__(self, commit: block_elements.EntryCommit, public_key: bytes, signature: bytes):
         # TODO: type/value assertions
         self.commit = commit
-        self.signature = signature
         self.public_key = public_key
+        self.signature = signature
         super().__init__()
 
     def marshal(self) -> bytes:
@@ -108,16 +108,16 @@ class EntryCommit(Message):
         Marshal the message into the following representation:
         - first byte is the message type (always 6)
         - next bytes are the marshalled Entry Commit object
-        - next 64 bytes are the signature
         - next 32 bytes are the public key
+        - next 64 bytes are the signature
 
         :return: byte representation of the message
         """
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.commit.marshal())
-        buf.extend(self.signature)
         buf.extend(self.public_key)
+        buf.extend(self.signature)
         return bytes(buf)
 
     @classmethod
@@ -130,15 +130,15 @@ class EntryCommit(Message):
         commit, data = block_elements.EntryCommit.unmarshal(data[:commit_size]), data[commit_size:]
 
         if len(data) > 0:  # TODO: found in factomd code, is this actually not signed sometimes?
-            signature, data = data[:64], data[64:]
             public_key, data = data[:32], data[32:]
+            signature, data = data[:64], data[64:]
         else:
-            signature, public_key = b'', b''
+            public_key, signature = b'', b''
 
         return EntryCommit(
             commit=commit,
-            signature=signature,
             public_key=public_key,
+            signature=signature,
         )
 
 
@@ -149,7 +149,7 @@ class EntryReveal(Message):
 
     TYPE = 13
 
-    def __init__(self, timestamp: bytes, entry: Entry):
+    def __init__(self, timestamp: bytes, entry: block_elements.Entry):
         self.timestamp = timestamp
         self.entry = entry
         super().__init__()
@@ -176,7 +176,7 @@ class EntryReveal(Message):
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         timestamp, data = data[:6], data[6:]
-        entry = Entry.unmarshal(data)
+        entry = block_elements.Entry.unmarshal(data)
         return EntryReveal(
             timestamp=timestamp,
             entry=entry,

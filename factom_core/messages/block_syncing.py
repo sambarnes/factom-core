@@ -15,8 +15,8 @@ class SignatureList(list):  # TODO: should this go in a separate module or packa
         buf = bytearray()
         buf.extend(struct.pack('>I', len(self)))
         for signature in self:
-            buf.extend(signature.get('signature'))
             buf.extend(signature.get('public_key'))
+            buf.extend(signature.get('signature'))
         return bytes(buf)
 
     @classmethod
@@ -24,11 +24,11 @@ class SignatureList(list):  # TODO: should this go in a separate module or packa
         length, data = struct.unpack('>I', raw[:4])[0], raw[4:]
         signatures = []
         for i in range(length):
-            signature, data = data[:64], data[64:]
             public_key, data = data[:32], data[32:]
+            signature, data = data[:64], data[64:]
             signatures.append({
+                'public_key': public_key,
                 'signature': signature,
-                'public_key': public_key
             })
         assert len(data) == 0, 'Extra bytes remaining!'
         return SignatureList(signatures)
