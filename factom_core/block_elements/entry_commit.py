@@ -1,6 +1,6 @@
 class EntryCommit:
 
-    ECID = b'\x03'
+    ECID = 0x03
     BITLENGTH = 136
 
     def __init__(self,timestamp: bytes, entry_hash: bytes, ec_spent: int, ec_public_key: bytes, signature: bytes,

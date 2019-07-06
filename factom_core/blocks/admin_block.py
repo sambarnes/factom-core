@@ -91,8 +91,6 @@ class AdminBlock:
     @classmethod
     def unmarshal_with_remainder(cls, raw: bytes):
         header, data = AdminBlockHeader.unmarshal_with_remainder(raw)
-        if header.body_size != len(data):
-            raise ValueError("Header body size does not match actual body size")
 
         messages = []
         for i in range(header.message_count):

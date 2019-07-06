@@ -107,7 +107,6 @@ class FactoidBlock:
     @classmethod
     def unmarshal_with_remainder(cls, raw: bytes):
         header, data = FactoidBlockHeader.unmarshal_with_remainder(raw)
-        assert header.body_size == len(data), 'header body size does not match actual body size'
         # Body
         transactions = {}
         current_minute_transactions = []

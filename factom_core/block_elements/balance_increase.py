@@ -2,7 +2,7 @@ from factom_core.utils import varint
 
 
 class BalanceIncrease:
-    ECID = b'\x04'
+    ECID = 0x04
 
     def __init__(self, ec_public_key: bytes, tx_id: bytes, index: int, quantity: int, **kwargs):
         # Required fields. Must be in every BalanceIncrease

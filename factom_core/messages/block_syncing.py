@@ -51,7 +51,7 @@ class DirectoryBlockState(Message):
         self.factoid_block = factoid_block
         self.entry_credit_block = entry_credit_block
         self.entry_blocks = entry_blocks
-        self.entries = entries
+        self.entries = entries  # TODO: can we just remove the entry field? It's no longer passed over the network
         self.signatures = signatures
         self.is_p2p = True
         super().__init__()
@@ -66,7 +66,7 @@ class DirectoryBlockState(Message):
         - next bytes are the marshalled Entry Credit Block
         - next 4 bytes are the number of Entry Blocks following
         - next bytes are the aforementioned marshalled Entry Blocks
-        - next 4 bytes are the number of Entries following
+        - next 4 bytes are the number of Entries following (NOTE: always 0 now)
         - next bytes are all of the Entries, marshalled as:
             - 4 bytes size of the Entry
             - marshalled Entry itself
@@ -114,7 +114,7 @@ class DirectoryBlockState(Message):
 
         entry_count, data = struct.unpack('>I', data[:4])[0], data[4:]
         entries = []
-        for i in range(entry_block_count):
+        for i in range(entry_count):
             entry_size, data = struct.unpack('>I', data[:4])[0], data[4:]
             entry, data = Entry.unmarshal(data[:entry_size]), data[entry_size:]
             entries.append(entry)
