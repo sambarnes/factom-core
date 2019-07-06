@@ -12,7 +12,7 @@ class Message:
         'is_p2p',  # (not marshalled)
         'is_local_only',  # if true, don't broadcast. we can skip verification too since it was locally sourced
         'is_from_network',  # if true, we got this message from the network (not marshalled)
-        'is_full_broadcast', # used for messages with no missing message support e.g. election related messages
+        'is_full_broadcast',  # used for messages with no missing message support e.g. election related messages
 
         'is_resendable',
         'resend_limit',
