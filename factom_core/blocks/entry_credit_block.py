@@ -83,22 +83,22 @@ class EntryCreditBlock:
         """
         buf = bytearray()
         buf.extend(self.header.marshal())
-        object_count = 0
         for minute, objects in self.objects.items():
-            object_count += len(objects) + 1
             for o in objects:
-                if isinstance(object, int):
+                if isinstance(o, int):
                     buf.append(0x00)
                     buf.append(o)
                 elif isinstance(o, ChainCommit):
-                    buf.extend(ChainCommit.ECID)
+                    buf.append(ChainCommit.ECID)
                     buf.extend(o.marshal())
                 elif isinstance(o, EntryCommit):
-                    buf.extend(EntryCommit.ECID)
+                    buf.append(EntryCommit.ECID)
                     buf.extend(o.marshal())
                 elif isinstance(o, BalanceIncrease):
-                    buf.extend(BalanceIncrease.ECID)
+                    buf.append(BalanceIncrease.ECID)
                     buf.extend(o.marshal())
+                else:
+                    raise ValueError("Invalid ECID type!")
             buf.append(0x01)
             buf.append(minute)
         return bytes(buf)
@@ -113,20 +113,23 @@ class EntryCreditBlock:
         EntryCreditBlock created will not include contextual metadata, such as timestamp or the pointer to the
         next entry-credit block.
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
-        assert header.body_size == len(data), 'header body size does not match actual body size'
         # Body
         objects = {}  # map of minute --> objects array
         current_minute_objects = []
         for i in range(header.object_count):
-            ecid, data = data[:1], data[1:]
-            if ecid == b'\x00':
-                server_index, data = data[:1], data[1:]
-                server_index = int.from_bytes(server_index, byteorder='big')
+            ecid, data = data[0], data[1:]
+            if ecid == 0x00:
+                server_index, data = data[0], data[1:]
                 current_minute_objects.append(server_index)
-            elif ecid == b'\x01':
-                minute, data = data[:1], data[1:]
-                minute = int.from_bytes(minute, byteorder='big')
+            elif ecid == 0x01:
+                minute, data = data[0], data[1:]
                 objects[minute] = current_minute_objects
                 current_minute_objects = []
             elif ecid == ChainCommit.ECID:
@@ -138,17 +141,15 @@ class EntryCreditBlock:
                 entry_commit = EntryCommit.unmarshal(entry_commit)
                 current_minute_objects.append(entry_commit)
             elif ecid == BalanceIncrease.ECID:
-                balance_increace, data = BalanceIncrease.unmarshal_with_remainder(data)
-                current_minute_objects.append(balance_increace)
+                balance_increase, data = BalanceIncrease.unmarshal_with_remainder(data)
+                current_minute_objects.append(balance_increase)
             else:
                 raise ValueError
-
-        assert len(data) == 0, 'Extra bytes remaining!'
 
         return EntryCreditBlock(
             header=header,
             objects=objects
-        )
+        ), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass

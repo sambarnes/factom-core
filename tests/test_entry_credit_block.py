@@ -114,7 +114,7 @@ class TestEntryCreditBlock(unittest.TestCase):
             1: [],
             2: [
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb028a000",
                     "entry_hash": "ad622780fd32b0986bc955e177c62eec0e17a48eef267aa862e240a3c3271677",
                     "ec_spent": 1,
@@ -123,7 +123,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "ca00bca640b80d8541906e2f977cb675c07dfc94005"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb0289f65",
                     "entry_hash": "f95551098e03bf6d5a00989f37b2cec7f9e06e2d4b1c62014bf531791d3301bc",
                     "ec_spent": 2,
@@ -132,7 +132,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "45a0bb35d621a1a42b0d37c56512525706e8ba90c09"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb028a0ea",
                     "entry_hash": "bd2a248f6c52a2c32b1c2067261f783d81a38d03ed7af90bafaf7aaa668b60fa",
                     "ec_spent": 2,
@@ -141,7 +141,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "9c2a14e5c9a880d19b88166b48b0f50c05271b4ff0a"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb028a197",
                     "entry_hash": "39e440db4ab07ef3cb57c9301367d5e95e87996d4d1c985e1ffa80fe3403c810",
                     "ec_spent": 1,
@@ -150,7 +150,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "18bc342d4ce67156b9e6911a95ef00c6d0c41f20106"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb029666d",
                     "entry_hash": "1c986f8d7432fbbb66d69f07df6cbe1e5b294a786bfb4c4b0e094777c4cfc258",
                     "ec_spent": 1,
@@ -161,7 +161,7 @@ class TestEntryCreditBlock(unittest.TestCase):
             ],
             3: [
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb029d1fb",
                     "entry_hash": "99ab1224e0755acd0577ded2cb3477fd105dd1fafbd025a998dd580618e908bd",
                     "ec_spent": 2,
@@ -170,7 +170,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "0ec906226ee97840d74362b7875d8d94c0465538904"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb029d297",
                     "entry_hash": "68499dfa4472dbb1bf139fbd3e66d5307fd30049cc2a3cdb8554eb62f464d318",
                     "ec_spent": 1,
@@ -179,7 +179,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "042099d03e314b32aa552fd6551028487796a6cd806"
                 },
                 {
-                    "ecid": b'\x02',
+                    "ecid": 0x02,
                     "timestamp": "016bb029d361",
                     "chain_id_hash": "f7e02792e58aa6f9b7d8f15d4681532e642ecd322b1d7e15405b937efbc9404d",
                     "commit_weld": "1c4004862cf670cc0015a6c268fb898040629a64f039c6c3514c0ef1a99fb920",
@@ -190,7 +190,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "78f4761becc852d1c362ef2cd86facb3ce526ea090d"
                 },
                 {
-                    "ecid": b'\x02',
+                    "ecid": 0x02,
                     "timestamp": "016bb029d405",
                     "chain_id_hash": "d573e1c94dbb32dad6da21a5187750b3416d714f48e01f71daf3b52193884648",
                     "commit_weld": "43111f5de168f565faa031ded22b6ce1e771eb505b67112562436f9249a638d3",
@@ -201,7 +201,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "be4810e84570e91be67cbeeafff0071540f9252230d"
                 },
                 {
-                    "ecid": b'\x02',
+                    "ecid": 0x02,
                     "timestamp": "016bb029d4bd",
                     "chain_id_hash": "7491263b7ee1531668588659dd1047a14d3fe195c429d2d2ebe1206bd038a53a",
                     "commit_weld": "7d3fa6f1a05a93795e35b977865d49d35f41bc72a999d8a9a51140fdea894dd8",
@@ -214,7 +214,7 @@ class TestEntryCreditBlock(unittest.TestCase):
             ],
             4: [
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb02ad5a3",
                     "entry_hash": "570ecdbe6f6f5e62527c4ceb7db3bb6d2c7e41ab631a1313bdb14a7a308e4523",
                     "ec_spent": 2,
@@ -223,7 +223,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "245782e52fedcaf6b7c4c18c989fe654b5b0f511803"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb02ad652",
                     "entry_hash": "63e8e541e082d003b5b16d146971539f473205c3ad23b81df623ffd653bad787",
                     "ec_spent": 1,
@@ -232,7 +232,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "45ae450155ca6dfac211adf88bd22999720f5e73200"
                 },
                 {
-                    "ecid": b'\x02',
+                    "ecid": 0x02,
                     "timestamp": "016bb02ad6fd",
                     "chain_id_hash": "148e1d95fb770e4f57f26faaf3f061ee314bf21a2eacbd84014c143862e30d3f",
                     "commit_weld": "646572a7eb488d371a550e418b40fbb6d4d5e8dc30fb5f3fa6935e5c1f8e7d88",
@@ -243,7 +243,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "c91be0dc2ffa1bec1a70a1d1d3163dcb8de936a8d06"
                 },
                 {
-                    "ecid": b'\x02',
+                    "ecid": 0x02,
                     "timestamp": "016bb02ad7b7",
                     "chain_id_hash": "bb6900a5fe9ba9ae00757b9f3402c258b670ce2ef6d1a8d60d1fddf6c5cf0666",
                     "commit_weld": "020b7c63bbcb625cd2d637e0bf7e3f69886ad0e2011b55213f26568a72888327",
@@ -254,7 +254,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "0c72b6c1178050f10a0829097f73f1d2e8dd228810b"
                 },
                 {
-                    "ecid": b'\x02',
+                    "ecid": 0x02,
                     "timestamp": "016bb02ad884",
                     "chain_id_hash": "56a14050a3d0d37828199bc45fcd64ca197cc2b1157e888121ebfd4a42a0682c",
                     "commit_weld": "63258fe7829cc15de9d8560031e3205857a6c45c110e9d1f4600da9207174b44",
@@ -272,7 +272,7 @@ class TestEntryCreditBlock(unittest.TestCase):
             9: [],
             10: [
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03043ed",
                     "entry_hash": "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2",
                     "ec_spent": 1,
@@ -281,7 +281,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "c16598d5bbc8066080b1b4fdf5e3c783ae6159e77a09"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b3",
                     "entry_hash": "170b3dc2def10bda963be05699ecd6ac8f4692573f4a8dd36b4a17392db70ff7",
                     "ec_spent": 1,
@@ -290,7 +290,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "a35847d0d27e8694d4a307d79d117dc8d8f798b8304"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b2",
                     "entry_hash": "b2491a8b8b8bb8395fc20f9abd6779e90aaa22a38c0508c685e944082f779176",
                     "ec_spent": 1,
@@ -299,7 +299,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "03dedcc2bf8cdfbb3bc6d3e68fe2619134a9f052207"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053aa",
                     "entry_hash": "7046dad9d0da9ffb27f9634e0665280f7f46bfe1f8e3a194f168718cbdd28e26",
                     "ec_spent": 1,
@@ -308,7 +308,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "9f50cb3bea1be59afdbdf3ca65ce5cee78a2e99ac02"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b1",
                     "entry_hash": "23c29da73f7de3ee42a111fab451c376f3cadb7e12923fa05bc01a2150ff349d",
                     "ec_spent": 1,
@@ -317,7 +317,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "0af3695f9b638229ddae3f8e8bcadbbeb20d0da1303"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b2",
                     "entry_hash": "5dd03aea8dcb5763a43f8e0fe6fd16c09d4f573d2b2f1df1e5fff8be372259bb",
                     "ec_spent": 1,
@@ -326,7 +326,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "c5508562fb38e3625ea12b7567c17d5c94ba722ae0a"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b7",
                     "entry_hash": "a181dd737eedc079eaf16181f6468273210036db00669b405db6958aa711cbf2",
                     "ec_spent": 1,
@@ -335,7 +335,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "ea7efb9c3ff1e9e38f504ebb816c5c3e5f963fa6a0e"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b4",
                     "entry_hash": "64a2d4bfa2b1c7e1093b9ae88ac8efb305f50798cfa8c07bf3699cab0aef3983",
                     "ec_spent": 1,
@@ -344,7 +344,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "1371ef0d113108d6a7f699728047bcb40280398580a"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b5",
                     "entry_hash": "dc9e6f420e3b7e7f08e7d144cfe03cbc40f35abd27821a4769bccfa054e44b00",
                     "ec_spent": 1,
@@ -353,7 +353,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "08bfd06fe353ec3c04cd2e0b2d21d2256caf750d607"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053ac",
                     "entry_hash": "20a51dae748935ca3f52ee7f892121290c12fa5fb71815271a9dc35947dc4cd8",
                     "ec_spent": 1,
@@ -362,7 +362,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "ac6020e8bbcacf1eaba566adc56ea5f5b3b4880c301"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b5",
                     "entry_hash": "2159e8322a02a299812ca3170eef0c6ca90ef847bc69d4e5a66357735fb18993",
                     "ec_spent": 1,
@@ -371,7 +371,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "653dd3c77197660822d4f70a736b8908249b8d6d20d"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b4",
                     "entry_hash": "b088d1744550627b82b3a9159c6acb0e3676cdb21d70cba5144aac1c6ce1a231",
                     "ec_spent": 1,
@@ -380,7 +380,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "effe084c30bab2c09e4ed1c679d661d81b7e0049c04"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b6",
                     "entry_hash": "b056456d9176e6c80a67a89e471a75c164bf19bdf0e0550af4e66943fad8e6c8",
                     "ec_spent": 1,
@@ -389,7 +389,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "3057612565f2d94e39844439e19e62e15c8f3247609"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03053b6",
                     "entry_hash": "563030a164e795050947415f0f4970b076ca74ecf491aecf1e8e714481ccd7d8",
                     "ec_spent": 1,
@@ -398,7 +398,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "babee7cec11448733a3caf7c5e32ae9b7cf4a06e30b"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb0308fcf",
                     "entry_hash": "0a5bd6faacca17d36b47663b9764429405acaec36be26aae2cb9bd44f76a14eb",
                     "ec_spent": 1,
@@ -407,7 +407,7 @@ class TestEntryCreditBlock(unittest.TestCase):
                                  "25a1b5ab02496342a4b7aa8f8089cd740b919806703"
                 },
                 {
-                    "ecid": b'\x03',
+                    "ecid": 0x03,
                     "timestamp": "016bb03093b9",
                     "entry_hash": "eba1585feaba30a4de4a1766aeb537d53ca2a1a6fd33c0ca0e606d85d7de9a6e",
                     "ec_spent": 1,
@@ -427,7 +427,7 @@ class TestEntryCreditBlock(unittest.TestCase):
             for i, o in enumerate(objects):
                 expected_object = expected_objects[minute][i]
                 if isinstance(object, int):
-                    assert b'\x00' == expected_object.get('ecid')
+                    assert 0x00 == expected_object.get('ecid')
                     # TODO: have a test case that checks server index ECID
                 elif isinstance(o, ChainCommit):
                     assert ChainCommit.ECID == expected_object.get('ecid')

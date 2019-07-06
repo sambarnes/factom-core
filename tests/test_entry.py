@@ -56,7 +56,7 @@ class TestEntry(unittest.TestCase):
                            "5448223a3239322e3830342c224c5443223a3132312e333032322c22584243223a3431362e353938352c22464" \
                            "354223a352e333837367d"
 
-        entry = Entry.unmarshal(bytes.fromhex(expected_entry_hash), bytes.fromhex(TestEntry.test_data))
+        entry = Entry.unmarshal(bytes.fromhex(TestEntry.test_data))
         assert entry.entry_hash.hex() == expected_entry_hash
         assert entry.chain_id.hex() == expected_chain_id
         for i, external_id in enumerate(entry.external_ids):
@@ -64,11 +64,10 @@ class TestEntry(unittest.TestCase):
         assert entry.content.hex() == expected_content
 
     def test_marshal(self):
-        entry_hash = "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
-        entry = Entry.unmarshal(bytes.fromhex(entry_hash), bytes.fromhex(TestEntry.test_data))
+        entry = Entry.unmarshal(bytes.fromhex(TestEntry.test_data))
         assert entry.marshal().hex() == TestEntry.test_data
 
     def test_entry_hash_calculation(self):
         expected_entry_hash = "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
-        entry = Entry.unmarshal(bytes.fromhex(expected_entry_hash), bytes.fromhex(TestEntry.test_data))
+        entry = Entry.unmarshal(bytes.fromhex(TestEntry.test_data))
         assert entry._calculate_entry_hash().hex() == expected_entry_hash

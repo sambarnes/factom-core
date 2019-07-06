@@ -84,9 +84,13 @@ class AdminBlock:
 
         AdminBlock created will not include contextual metadata, such as timestamp
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header, data = AdminBlockHeader.unmarshal_with_remainder(raw)
-        if header.body_size != len(data):
-            raise ValueError("Header body size does not match actual body size")
 
         messages = []
         for i in range(header.message_count):
@@ -166,12 +170,11 @@ class AdminBlock:
                 messages.append(msg)
 
         assert len(messages) == header.message_count, 'Unexpected message count!'
-        assert len(data) == 0, 'Extra bytes remaining!'
 
         return AdminBlock(
             header=header,
             messages=messages
-        )
+        ), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass

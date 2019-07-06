@@ -49,12 +49,12 @@ class EntryBlockHeader:
 
 
 class EntryBlock:
-    def __init__(self, keymr: bytes, header: EntryBlockHeader, entry_hashes: dict, **kwargs):
+    def __init__(self, header: EntryBlockHeader, entry_hashes: dict, **kwargs):
         # Required fields. Must be in every EntryBlock
-        self.keymr = keymr
         self.header = header
         self.entry_hashes = entry_hashes
         # TODO: assert they're all here
+        self.keymr = b''  # TODO: add keymr calculation
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
         self.directory_block_keymr = kwargs.get('directory_block_keymr')
@@ -77,7 +77,7 @@ class EntryBlock:
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, keymr: bytes, raw: bytes):
+    def unmarshal(cls, raw: bytes):
         """Returns a new EntryBlock object, unmarshalling given bytes according to:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-block
 
@@ -86,6 +86,12 @@ class EntryBlock:
         EntryBlock created will not include contextual metadata, such as timestamp or the pointer to the
         next entry block.
         """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
         header_data, data = raw[:EntryBlockHeader.LENGTH], raw[EntryBlockHeader.LENGTH:]
         header = EntryBlockHeader.unmarshal(header_data)
 
@@ -101,13 +107,10 @@ class EntryBlock:
             else:
                 current_minute_entries.append(entry_hash)
 
-        assert len(data) == 0, 'Extra bytes remaining!'
-
         return EntryBlock(
-            keymr=keymr,
             header=header,
             entry_hashes=entry_hashes,
-        )
+        ), data
 
     def add_context(self, directory_block: DirectoryBlock):
         self.directory_block_keymr = directory_block.keymr
@@ -131,4 +134,3 @@ class EntryBlock:
 
     def __str__(self):
         return '{}(height={}, keymr={})'.format(self.__class__.__name__, self.header.height, self.keymr.hex())
-

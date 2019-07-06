@@ -1,6 +1,6 @@
 class ChainCommit:
 
-    ECID = b'\x02'
+    ECID = 0x02
     BITLENGTH = 200
 
     def __init__(self, timestamp: bytes, chain_id_hash: bytes, commit_weld: bytes, entry_hash: bytes,
