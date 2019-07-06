@@ -187,3 +187,38 @@ class DirectoryBlockStateRequest(Message):
     def __str__(self):
 
         return '{}()'.format(self.__class__.__name__)
+
+
+class BlockRequest(Message):
+    """
+    An unimplemented message. I assume for requesting single blocks of any type.
+    """
+
+    TYPE = 14
+
+    def __init__(self, timestamp: bytes):
+        # TODO: type/value assertions
+        self.timestamp = timestamp
+        super().__init__()
+
+    def marshal(self) -> bytes:
+        """
+        Marshal the message into the following representation:
+        - first byte is the message type (always 14)
+        - next 6 bytes are a timestamp
+
+        :return: byte representation of the message
+        """
+        buf = bytearray()
+        buf.append(self.TYPE)
+        buf.extend(self.timestamp)
+        return bytes(buf)
+
+    @classmethod
+    def unmarshal(cls, raw:  bytes):
+        msg_type, data = raw[0], raw[1:]
+        if msg_type != cls.TYPE:
+            raise ValueError("Invalid message type ({})".format(msg_type))
+        timestamp, data = data[:6], data[6:]
+        assert len(data) == 0, 'Extra bytes remaining!'
+        return BlockRequest(timestamp=timestamp)

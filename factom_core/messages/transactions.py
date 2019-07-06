@@ -17,7 +17,7 @@ class FactoidTransaction(Message):
     def marshal(self) -> bytes:
         """
         Marshal the message into the following representation:
-        - first byte is the message type (always 5)
+        - first byte is the message type (always 9)
         - next bytes are the marshalled Factoid Transaction object
 
         :return: byte representation of the message
