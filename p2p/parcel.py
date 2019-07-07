@@ -26,12 +26,20 @@ class ParcelType(IntEnum):
 
 class Parcel:
 
+    BROADCAST_ADDRESS = "<BROADCAST>"
+    FULL_BROADCAST_ADDRESS = "<FULLBORADCAST>"
+    RANDOM_PEER_ADDRESS = "<RANDOMPEER>"
+
     def __init__(self, parcel_type: ParcelType, address: str, payload: bytes):
         """
         The raw data interface between the network, the p2p package, and the application.
         """
         if not ParcelType.is_valid(parcel_type):
             raise ValueError("Invalid parcel_type provided")
+        elif not type(address) is not str and address is not None:
+            raise ValueError("address must be a string or None")
+        elif type(payload) is not bytes or len(payload) == 0:
+            raise ValueError("payload must be a bytes object of non-zero length")
         self.parcel_type = parcel_type  # 2 bytes - network level commands
         self.address = address          # ? bytes - "" or None for broadcast, otherwise the destination peer's hash
         self.payload = payload
