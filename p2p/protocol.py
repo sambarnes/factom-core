@@ -1,3 +1,6 @@
+from p2p import Parcel
+
+
 class Protocol:
 
     version = None  # type: str
@@ -16,7 +19,7 @@ class Protocol:
         if not isinstance(self.version, str) or len(self.version) == 0:
             raise ValueError("The Protocol class must be instantiated with a non-empty `version` string")
 
-    def send(self, parcel):
+    def send(self, parcel: Parcel):
         """
         Parcel => Protocol Encoder => Protocol Format => TCP
 
@@ -25,7 +28,7 @@ class Protocol:
         """
         pass
 
-    def receive(self):
+    def receive(self) -> Parcel:
         """
         Receive: TCP => Protocol Format => Protocol Decoder => Parcel
 
@@ -49,36 +52,4 @@ class Protocol:
         :param payload: marshalled peer share payload
         :return: list of peer share objects
         """
-        pass
-
-
-class ProtocolV10(Protocol):
-    version = "10"
-
-    def send(self, parcel):
-        pass
-
-    def receive(self):
-        pass
-
-    def make_peer_share(self, ps: list) -> bytes:
-        pass
-
-    def parse_peer_share(self, payload: bytes):
-        pass
-
-
-class ProtocolV9(Protocol):
-    version = "9"
-
-    def send(self, parcel):
-        pass
-
-    def receive(self):
-        pass
-
-    def make_peer_share(self, ps: list) -> bytes:
-        pass
-
-    def parse_peer_share(self, payload: bytes):
         pass
