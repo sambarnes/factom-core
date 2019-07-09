@@ -28,7 +28,6 @@ class DirectoryBlockHeader:
         buf.extend(struct.pack('>I', self.block_count))
         return bytes(buf)
 
-
     @classmethod
     def unmarshal(cls, raw: bytes):
         if len(raw) != DirectoryBlockHeader.LENGTH:

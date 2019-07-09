@@ -20,7 +20,6 @@ class TestEntryBlock(unittest.TestCase):
                 "000000000000000000000000000000000000000a"
 
     def test_unmarshal(self):
-        expected_keymr = "09df02abdb74f44ddf1762bf578790219ff012b5786813b51229770a343724d8"
         expected_chain_id = "b312a0401879366b3d72a1844b3ca0da1009545ffa8e4038f80da1528cb572ab"
         expected_body_mr = "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
         expected_prev_keymr = "fdadf8de663a045e4e5927bd71f16718cd036429cc4e64f194116a50fd44adf5"
@@ -47,7 +46,6 @@ class TestEntryBlock(unittest.TestCase):
         }
 
         block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
-        # TODO: assert block.keymr.hex() == expected_keymr
         assert block.header.chain_id.hex() == expected_chain_id
         assert block.header.body_mr.hex() == expected_body_mr
         assert block.header.prev_keymr.hex() == expected_prev_keymr
