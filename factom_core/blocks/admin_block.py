@@ -77,11 +77,12 @@ class AdminBlock:
     def marshal(self) -> bytes:
         buf = bytearray()
         buf.extend(self.header.marshal())
-        bodybuf = bytearray()
         for message in self.messages:
-            bodybuf.append(message.__class__.ADMIN_ID)
-            bodybuf.extend(message.marshal())
-        buf.extend(bodybuf)
+            if type(message) is int:
+                buf.append(message)
+                continue
+            buf.append(message.__class__.ADMIN_ID)
+            buf.extend(message.marshal())
         return bytes(buf)
 
     @classmethod
@@ -104,7 +105,6 @@ class AdminBlock:
         messages = []
         for i in range(header.message_count):
             admin_id, data = data[0], data[1:]
-            assert admin_id <= 0x0E, 'Unsupported Admin message type! ({})'.format(admin_id)
             msg = None
             if admin_id == MinuteNumber.ADMIN_ID:  # Deprecated in M2
                 size = MinuteNumber.MESSAGE_SIZE
@@ -175,10 +175,14 @@ class AdminBlock:
                 msg_data, data = data[:size], data[size:]
                 msg = AddAuthorityFactoidAddress.unmarshal(msg_data)
 
+            elif admin_id <= 0x0E:
+                msg = admin_id
+                print("Unsupported admin message type {} found at Admin Block {}".format(admin_id, header.height))
+
             if msg is not None:
                 messages.append(msg)
 
-        assert len(messages) == header.message_count, 'Unexpected message count!'
+        assert len(messages) == header.message_count, 'Unexpected message count at Admin Block {}'.format(header.height)
 
         return AdminBlock(
             header=header,
