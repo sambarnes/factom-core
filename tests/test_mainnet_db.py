@@ -54,7 +54,3 @@ class TestMainnetDatabase(unittest.TestCase):
         level_db = FactomdLevelDB(path)
         assert TestMainnetDatabase._load_block_from_db(level_db) is True
         level_db.close()
-
-
-
-
