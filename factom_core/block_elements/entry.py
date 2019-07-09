@@ -10,7 +10,7 @@ class Entry:
         self.external_ids = external_ids
         self.content = content
         # TODO: assert they're all here
-        self.entry_hash = self._calculate_entry_hash()
+        self._cached_entry_hash = None
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
         self.directory_block_keymr = kwargs.get('directory_block_keymr')
@@ -19,14 +19,19 @@ class Entry:
         self.timestamp = kwargs.get('timestamp')
         self.stage = kwargs.get('stage', 'replicated')
 
-    def _calculate_entry_hash(self):
-        """Returns the entry hash in bytes. The algorithm used, along with the rationale behind its use, is shown at:
+    @property
+    def entry_hash(self):
+        """The entry hash in bytes. The algorithm used, along with the rationale behind its use, is shown at:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-hash
         """
+        if self._cached_entry_hash is not None:
+            return self._cached_entry_hash
+
         # Entry Hash = SHA256(SHA512(marshalled_entry_data) + marshalled_entry_data)
         data = self.marshal()
         h = sha512(data).digest()
-        return sha256(h + data).digest()
+        self._cached_entry_hash = sha256(h + data).digest()
+        return self._cached_entry_hash
 
     def marshal(self):
         """Marshals the entry according to the byte-level representation shown at

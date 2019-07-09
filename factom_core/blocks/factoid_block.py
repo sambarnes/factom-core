@@ -74,7 +74,15 @@ class FactoidBlock:
         self.transactions = transactions
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
-        self.keymr = b''  # TODO: calculate keymr
+        self._cached_keymr = None
+
+    @property
+    def keymr(self):
+        if self._cached_keymr is not None:
+            return self._cached_keymr
+
+        # TODO: calculate keymr
+        return b''
 
     def marshal(self):
         """Marshals the factoid block according to the byte-level representation shown at

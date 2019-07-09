@@ -54,12 +54,20 @@ class EntryBlock:
         self.header = header
         self.entry_hashes = entry_hashes
         # TODO: assert they're all here
-        self.keymr = b''  # TODO: add keymr calculation
+        self._cached_keymr = None
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
         self.directory_block_keymr = kwargs.get('directory_block_keymr')
         self.timestamp = kwargs.get('timestamp')
         self.next_keymr = kwargs.get('next_keymr')
+
+    @property
+    def keymr(self):
+        if self._cached_keymr is not None:
+            return self._cached_keymr
+
+        # TODO: calculate keymr
+        return b''
 
     def marshal(self):
         """Marshals the entry block according to the byte-level representation shown at

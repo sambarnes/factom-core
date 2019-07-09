@@ -61,9 +61,18 @@ class AdminBlock:
         self.messages = messages
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
+        self._cached_lookup_hash = None
 
     def __str__(self):
         pass
+
+    @property
+    def lookup_hash(self):
+        if self._cached_lookup_hash is not None:
+            return self._cached_lookup_hash
+
+        # TODO: calculate lookup hash
+        return b''
 
     def marshal(self) -> bytes:
         buf = bytearray()

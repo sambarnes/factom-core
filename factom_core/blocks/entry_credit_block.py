@@ -73,6 +73,15 @@ class EntryCreditBlock:
         self.objects = objects
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
+        self._cached_header_hash = None
+
+    @property
+    def header_hash(self):
+        if self._cached_header_hash is not None:
+            return self._cached_header_hash
+
+        # TODO: calculate header hash
+        return b''
 
     def marshal(self):
         """Marshals the directory block according to the byte-level representation shown at

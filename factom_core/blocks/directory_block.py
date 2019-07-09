@@ -61,11 +61,19 @@ class DirectoryBlock:
         self.factoid_block_keymr = factoid_block_keymr
         self.entry_blocks = entry_blocks
         # TODO: assert they're all here
-        self.keymr = b''  # TODO: add keymr calculation
+        self._cached_keymr = None
 
         # Optional contextual fields
         self.next_keymr = kwargs.get('next_keymr')
         self.anchor_entry_hash = kwargs.get('anchor_entry_hash')
+
+    @property
+    def keymr(self):
+        if self._cached_keymr is not None:
+            return self._cached_keymr
+
+        # TODO: calculate keymr
+        return b''
 
     def marshal(self):
         """Marshals the directory block according to the byte-level representation shown at
