@@ -61,3 +61,13 @@ class TestEntryBlock(unittest.TestCase):
     def test_marshal(self):
         block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
         assert block.marshal().hex() == TestEntryBlock.test_data
+
+    def test_keymr(self):
+        expected_keymr = "09df02abdb74f44ddf1762bf578790219ff012b5786813b51229770a343724d8"
+        block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
+        assert block.keymr.hex() == expected_keymr
+
+    def test_body_mr(self):
+        expected_body_mr = "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
+        block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
+        assert block.body_mr.hex() == block.header.body_mr.hex() == expected_body_mr

@@ -1,5 +1,6 @@
 import struct
 from .directory_block import DirectoryBlock
+from factom_core.utils import merkle
 
 
 class EntryBlockHeader:
@@ -55,6 +56,7 @@ class EntryBlock:
         self.entry_hashes = entry_hashes
         # TODO: assert they're all here
         self._cached_keymr = None
+        self._cached_body_mr = None
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
         self.directory_block_keymr = kwargs.get('directory_block_keymr')
@@ -62,12 +64,28 @@ class EntryBlock:
         self.next_keymr = kwargs.get('next_keymr')
 
     @property
+    def body_mr(self):
+        if self._cached_body_mr is not None:
+            return self._cached_body_mr
+
+        body_elements = []
+        for minute, hashes in self.entry_hashes.items():
+            for h in hashes:
+                body_elements.append(h)
+            buf = bytearray()
+            buf.extend(bytes(31))
+            buf.append(minute)
+            body_elements.append(bytes(buf))
+        self._cached_body_mr = merkle.get_merkle_root(body_elements)
+        return self._cached_body_mr
+
+    @property
     def keymr(self):
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        # TODO: calculate keymr
-        return b''
+        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body_mr)
+        return self._cached_keymr
 
     def marshal(self):
         """Marshals the entry block according to the byte-level representation shown at
