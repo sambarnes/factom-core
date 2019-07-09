@@ -1,5 +1,6 @@
 import factom_core
 import struct
+from factom_core.utils import merkle
 
 
 class DirectoryBlockHeader:
@@ -17,6 +18,7 @@ class DirectoryBlockHeader:
 
     def marshal(self):
         buf = bytearray()
+        buf.append(0x00)
         buf.extend(self.network_id)
         buf.extend(self.body_mr)
         buf.extend(self.prev_keymr)
@@ -62,18 +64,38 @@ class DirectoryBlock:
         self.entry_blocks = entry_blocks
         # TODO: assert they're all here
         self._cached_keymr = None
+        self._cached_body_mr = None
 
         # Optional contextual fields
         self.next_keymr = kwargs.get('next_keymr')
         self.anchor_entry_hash = kwargs.get('anchor_entry_hash')
 
     @property
+    def body_mr(self):
+        if self._cached_body_mr is not None:
+            return self._cached_body_mr
+
+        body_elements = [
+            factom_core.blocks.AdminBlockHeader.CHAIN_ID,
+            self.admin_block_lookup_hash,
+            factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID,
+            self.entry_credit_block_header_hash,
+            factom_core.blocks.FactoidBlockHeader.CHAIN_ID,
+            self.factoid_block_keymr
+        ]
+        for e_block in self.entry_blocks:
+            body_elements.append(e_block.get('chain_id'))
+            body_elements.append(e_block.get('keymr'))
+        self._cached_body_mr = merkle.get_merkle_root(body_elements)
+        return self._cached_body_mr
+
+    @property
     def keymr(self):
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        # TODO: calculate keymr
-        return b''
+        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body_mr)
+        return self._cached_keymr
 
     def marshal(self):
         """Marshals the directory block according to the byte-level representation shown at
@@ -83,7 +105,6 @@ class DirectoryBlock:
         next directory block.
         """
         buf = bytearray()
-        buf.append(0x00)
         buf.extend(self.header.marshal())
         buf.extend(factom_core.blocks.AdminBlockHeader.CHAIN_ID)
         buf.extend(self.admin_block_lookup_hash)

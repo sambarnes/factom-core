@@ -26,7 +26,6 @@ class TestDirectoryBlock(unittest.TestCase):
                 "ffbd34e82056cf285abfabfbef230928d8a86de42c768fd1b312302a56a4a5e4329826f7eec7ce8e445e479553"
 
     def test_unmarshal(self):
-        expected_keymr = "aed3e8a8a3e9515a60eee86e176dc07e503f5a5481a4aad52d344d6f6c8e9613"
         expected_network_id = "fa92e5a2"
         expected_body_mr = "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
         expected_prev_keymr = "06a775ece14fb21e14fd3df37c5e51c039789206d9c8402ed9ff9d9ca903ac24"
@@ -79,7 +78,6 @@ class TestDirectoryBlock(unittest.TestCase):
             }
         ]
         block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
-        # TODO: assert block.keymr.hex() == expected_keymr
         assert block.header.network_id.hex() == expected_network_id
         assert block.header.body_mr.hex() == expected_body_mr
         assert block.header.prev_keymr.hex() == expected_prev_keymr
@@ -98,3 +96,13 @@ class TestDirectoryBlock(unittest.TestCase):
     def test_marshal(self):
         block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
         assert block.marshal().hex() == TestDirectoryBlock.test_data
+
+    def test_keymr(self):
+        expected_keymr = "aed3e8a8a3e9515a60eee86e176dc07e503f5a5481a4aad52d344d6f6c8e9613"
+        block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
+        assert block.keymr.hex() == expected_keymr, "{} != {}".format(block.keymr.hex(), expected_keymr)
+
+    def test_body_mr(self):
+        expected_body_mr = "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
+        block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
+        assert block.body_mr.hex() == expected_body_mr, "{} != {}".format(block.body_mr.hex(), expected_body_mr)
