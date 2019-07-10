@@ -89,7 +89,6 @@ class FactomdLevelDB:
         if raw is None:
             return None
         block = blocks.AdminBlock.unmarshal(raw)
-        block._cached_lookup_hash = lookup_hash  # TODO: remove setting of lookup hash once calculation implemented
         return block
 
     def put_admin_block(self, block: blocks.AdminBlock):
@@ -113,7 +112,6 @@ class FactomdLevelDB:
         if raw is None:
             return None
         block = blocks.FactoidBlock.unmarshal(raw)
-        block._cached_keymr = keymr  # TODO: remove setting of keymr once calculation implemented
         return block
 
     def put_factoid_block(self, block: blocks.FactoidBlock):
@@ -137,7 +135,6 @@ class FactomdLevelDB:
         if raw is None:
             return None
         block = blocks.EntryCreditBlock.unmarshal(raw)
-        block._cached_header_hash = header_hash  # TODO: remove setting of header hash once calculation implemented
         return block
 
     def put_entry_credit_block(self, block: blocks.EntryCreditBlock):
@@ -152,7 +149,6 @@ class FactomdLevelDB:
         if raw is None:
             return None
         block = blocks.EntryBlock.unmarshal(raw)
-        block._cached_keymr = keymr  # TODO: remove setting of keymr once calculation implemented
         return block
 
     def put_entry_block(self, block: blocks.EntryBlock):
