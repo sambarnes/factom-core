@@ -1,3 +1,4 @@
+import hashlib
 from .directory_block import DirectoryBlock
 from factom_core.block_elements.admin_messages import *
 from factom_core.utils import varint
@@ -63,16 +64,12 @@ class AdminBlock:
         # TODO: use kwargs for some optional metadata
         self._cached_lookup_hash = None
 
-    def __str__(self):
-        pass
-
     @property
     def lookup_hash(self):
         if self._cached_lookup_hash is not None:
             return self._cached_lookup_hash
-
-        # TODO: calculate lookup hash
-        return b''
+        self._cached_lookup_hash = hashlib.sha256(self.marshal()).digest()
+        return self._cached_lookup_hash
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -194,3 +191,6 @@ class AdminBlock:
 
     def to_dict(self):
         pass
+
+    def __str__(self):
+        return '{}(height={}, hash={})'.format(self.__class__.__name__, self.header.height, self.lookup_hash.hex())

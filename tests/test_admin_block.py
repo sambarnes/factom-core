@@ -110,3 +110,9 @@ class TestAdminBlock(unittest.TestCase):
     def test_marshal(self):
         block = AdminBlock.unmarshal(bytes.fromhex(TestAdminBlock.test_data))
         assert block.marshal().hex() == TestAdminBlock.test_data
+
+    def test_lookup_hash(self):
+        expected_lookup_hash = "748a13e79aa35130ea193141ee7849b5cc7ffcceb1aa77d58cb62c129170ca79"
+        block = AdminBlock.unmarshal(bytes.fromhex(TestAdminBlock.test_data))
+        assert block.lookup_hash.hex() == expected_lookup_hash, \
+            "{} != {}".format(block.lookup_hash.hex(), expected_lookup_hash)

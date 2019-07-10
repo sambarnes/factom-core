@@ -452,3 +452,9 @@ class TestEntryCreditBlock(unittest.TestCase):
     def test_marshal(self):
         block = EntryCreditBlock.unmarshal(bytes.fromhex(TestEntryCreditBlock.test_data))
         assert block.marshal().hex() == TestEntryCreditBlock.test_data
+
+    def test_header_hash(self):
+        expected_header_hash = "95dcfe56875b826336c09059d1259401082042cdc99e9b7f41b2b6deadb5e26b"
+        block = EntryCreditBlock.unmarshal(bytes.fromhex(TestEntryCreditBlock.test_data))
+        assert block.header_hash.hex() == expected_header_hash, \
+            "{} != {}".format(block.lookup_hash.hex(), expected_header_hash)

@@ -1,7 +1,11 @@
+import hashlib
 import struct
 from .directory_block import DirectoryBlock
 from factom_core.block_elements.factoid_transaction import FactoidTransaction
-from factom_core.utils import varint
+from factom_core.utils import (
+    merkle,
+    varint,
+)
 
 
 class FactoidBlockHeader:
@@ -75,14 +79,35 @@ class FactoidBlock:
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
         self._cached_keymr = None
+        self._cached_body_mr = None
+
+    @property
+    def body_mr(self):
+        if self._cached_body_mr is not None:
+            return self._cached_body_mr
+
+        # For Factoid Blocks, body MR is implemented differently in that you first take a single sha256 of every element
+        # in the body. And you make a Merkle tree out of the hashed body elements, rather than the elements themselves.
+        body_elements = []
+        for transactions in self.transactions.values():
+            for tx in transactions:
+                body_elements.append(tx.hash)
+            minute_marker = hashlib.sha256(b'\x00').digest()
+            body_elements.append(minute_marker)
+        self._cached_body_mr = merkle.get_merkle_root(body_elements)
+        return self._cached_body_mr
 
     @property
     def keymr(self):
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        # TODO: calculate keymr
-        return b''
+        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body_mr)
+        return self._cached_keymr
+
+    @property
+    def ledger_keymr(self):
+        pass # TODO: calculate ledger keymr
 
     def marshal(self):
         """Marshals the factoid block according to the byte-level representation shown at
