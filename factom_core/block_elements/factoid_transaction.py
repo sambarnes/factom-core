@@ -1,3 +1,4 @@
+import hashlib
 from factom_core.utils import varint
 
 
@@ -16,6 +17,10 @@ class FactoidTransaction:
     def is_coinbase(self):
         # TODO: Coinbase outputs be zero too right? Just matters that everything else is definitely zero
         return len(self.inputs) == 0 and len(self.ec_purchases) == 0 and len(self.rcds) == 0
+
+    @property
+    def hash(self):
+        return hashlib.sha256(self.marshal()).digest()
 
     def marshal(self):
         """Marshals the FactoidTransaction according to the byte-level representation shown at
