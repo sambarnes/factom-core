@@ -1,3 +1,4 @@
+import hashlib
 import struct
 from .directory_block import DirectoryBlock
 from factom_core.block_elements.balance_increase import BalanceIncrease
@@ -73,6 +74,14 @@ class EntryCreditBlock:
         self.objects = objects
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
+        self._cached_header_hash = None
+
+    @property
+    def header_hash(self):
+        if self._cached_header_hash is not None:
+            return self._cached_header_hash
+        self._cached_header_hash = hashlib.sha256(self.header.marshal()).digest()
+        return self._cached_header_hash
 
     def marshal(self):
         """Marshals the directory block according to the byte-level representation shown at

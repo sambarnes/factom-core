@@ -1,3 +1,4 @@
+import hashlib
 from .directory_block import DirectoryBlock
 from factom_core.block_elements.admin_messages import *
 from factom_core.utils import varint
@@ -61,18 +62,24 @@ class AdminBlock:
         self.messages = messages
         # TODO: assert they're all here
         # TODO: use kwargs for some optional metadata
+        self._cached_lookup_hash = None
 
-    def __str__(self):
-        pass
+    @property
+    def lookup_hash(self):
+        if self._cached_lookup_hash is not None:
+            return self._cached_lookup_hash
+        self._cached_lookup_hash = hashlib.sha256(self.marshal()).digest()
+        return self._cached_lookup_hash
 
     def marshal(self) -> bytes:
         buf = bytearray()
         buf.extend(self.header.marshal())
-        bodybuf = bytearray()
         for message in self.messages:
-            bodybuf.append(message.__class__.ADMIN_ID)
-            bodybuf.extend(message.marshal())
-        buf.extend(bodybuf)
+            if type(message) is int:
+                buf.append(message)
+                continue
+            buf.append(message.__class__.ADMIN_ID)
+            buf.extend(message.marshal())
         return bytes(buf)
 
     @classmethod
@@ -95,7 +102,6 @@ class AdminBlock:
         messages = []
         for i in range(header.message_count):
             admin_id, data = data[0], data[1:]
-            assert admin_id <= 0x0E, 'Unsupported Admin message type! ({})'.format(admin_id)
             msg = None
             if admin_id == MinuteNumber.ADMIN_ID:  # Deprecated in M2
                 size = MinuteNumber.MESSAGE_SIZE
@@ -166,10 +172,14 @@ class AdminBlock:
                 msg_data, data = data[:size], data[size:]
                 msg = AddAuthorityFactoidAddress.unmarshal(msg_data)
 
+            elif admin_id <= 0x0E:
+                msg = admin_id
+                print("Unsupported admin message type {} found at Admin Block {}".format(admin_id, header.height))
+
             if msg is not None:
                 messages.append(msg)
 
-        assert len(messages) == header.message_count, 'Unexpected message count!'
+        assert len(messages) == header.message_count, 'Unexpected message count at Admin Block {}'.format(header.height)
 
         return AdminBlock(
             header=header,
@@ -181,3 +191,6 @@ class AdminBlock:
 
     def to_dict(self):
         pass
+
+    def __str__(self):
+        return '{}(height={}, hash={})'.format(self.__class__.__name__, self.header.height, self.lookup_hash.hex())
