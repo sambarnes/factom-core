@@ -70,4 +70,4 @@ class TestEntry(unittest.TestCase):
     def test_entry_hash_calculation(self):
         expected_entry_hash = "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
         entry = Entry.unmarshal(bytes.fromhex(TestEntry.test_data))
-        assert entry._calculate_entry_hash().hex() == expected_entry_hash
+        assert entry.entry_hash.hex() == expected_entry_hash
