@@ -1,27 +1,30 @@
 import hashlib
 import struct
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.block_elements.factoid_transaction import FactoidTransaction
-from factom_core.utils import (
-    merkle,
-    varint,
-)
+from factom_core.utils import merkle, varint
 
 
+@dataclass
 class FactoidBlockHeader:
 
-    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000f")
+    CHAIN_ID = bytes.fromhex(
+        "000000000000000000000000000000000000000000000000000000000000000f"
+    )
 
-    def __init__(self, body_mr: bytes, prev_keymr: bytes, prev_ledger_keymr: bytes, ec_exchange_rate: int, height: int,
-                 expansion_area: bytes, transaction_count: int, body_size: int):
-        self.body_mr = body_mr
-        self.prev_keymr = prev_keymr
-        self.prev_ledger_keymr = prev_ledger_keymr
-        self.ec_exchange_rate = ec_exchange_rate
-        self.height = height
-        self.expansion_area = expansion_area
-        self.transaction_count = transaction_count
-        self.body_size = body_size
+    body_mr: bytes
+    prev_keymr: bytes
+    prev_ledger_keymr: bytes
+    ec_exchange_rate: int
+    height: int
+    expansion_area: bytes
+    transaction_count: int
+    body_size: int
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -29,18 +32,18 @@ class FactoidBlockHeader:
         buf.extend(self.body_mr)
         buf.extend(self.prev_keymr)
         buf.extend(self.prev_ledger_keymr)
-        buf.extend(struct.pack('>Q', self.ec_exchange_rate))
-        buf.extend(struct.pack('>I', self.height))
+        buf.extend(struct.pack(">Q", self.ec_exchange_rate))
+        buf.extend(struct.pack(">I", self.height))
         buf.extend(varint.encode(len(self.expansion_area)))
         buf.extend(self.expansion_area)
-        buf.extend(struct.pack('>I', self.transaction_count))
-        buf.extend(struct.pack('>I', self.body_size))
+        buf.extend(struct.pack(">I", self.transaction_count))
+        buf.extend(struct.pack(">I", self.body_size))
         return bytes(buf)
 
     @classmethod
     def unmarshal(cls, raw: bytes):
         h, data = FactoidBlockHeader.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return h
 
     @classmethod
@@ -50,36 +53,44 @@ class FactoidBlockHeader:
         body_mr, data = data[:32], data[32:]
         prev_keymr, data = data[:32], data[32:]
         prev_ledger_keymr, data = data[:32], data[32:]
-        ec_exchange_rate, data = struct.unpack('>Q', data[:8])[0], data[8:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        ec_exchange_rate, data = struct.unpack(">Q", data[:8])[0], data[8:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
 
         header_expansion_size, data = varint.decode(data)
-        header_expansion_area, data = data[:header_expansion_size], data[header_expansion_size:]
+        header_expansion_area, data = (
+            data[:header_expansion_size],
+            data[header_expansion_size:],
+        )
 
-        transaction_count, data = struct.unpack('>I', data[:4])[0], data[4:]
-        body_size, data = struct.unpack('>I', data[:4])[0], data[4:]
-        return FactoidBlockHeader(
-            body_mr=body_mr,
-            prev_keymr=prev_keymr,
-            prev_ledger_keymr=prev_ledger_keymr,
-            ec_exchange_rate=ec_exchange_rate,
-            height=height,
-            expansion_area=header_expansion_area,
-            transaction_count=transaction_count,
-            body_size=body_size
-        ), data
+        transaction_count, data = struct.unpack(">I", data[:4])[0], data[4:]
+        body_size, data = struct.unpack(">I", data[:4])[0], data[4:]
+        return (
+            FactoidBlockHeader(
+                body_mr=body_mr,
+                prev_keymr=prev_keymr,
+                prev_ledger_keymr=prev_ledger_keymr,
+                ec_exchange_rate=ec_exchange_rate,
+                height=height,
+                expansion_area=header_expansion_area,
+                transaction_count=transaction_count,
+                body_size=body_size,
+            ),
+            data,
+        )
 
 
+@dataclass
 class FactoidBlock:
 
-    def __init__(self, header: FactoidBlockHeader, transactions: dict, **kwargs):
-        # Required fields. Must be in every FactoidBlock
-        self.header = header
-        self.transactions = transactions
-        # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
-        self._cached_keymr = None
-        self._cached_body_mr = None
+    header: FactoidBlockHeader
+    transactions: dict
+
+    _cached_keymr: bytes = None
+    _cached_body_mr: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
     def body_mr(self):
@@ -92,7 +103,7 @@ class FactoidBlock:
         for transactions in self.transactions.values():
             for tx in transactions:
                 body_elements.append(tx.hash)
-            minute_marker = hashlib.sha256(b'\x00').digest()
+            minute_marker = hashlib.sha256(b"\x00").digest()
             body_elements.append(minute_marker)
         self._cached_body_mr = merkle.get_merkle_root(body_elements)
         return self._cached_body_mr
@@ -107,7 +118,7 @@ class FactoidBlock:
 
     @property
     def ledger_keymr(self):
-        pass # TODO: calculate ledger keymr
+        pass  # TODO: calculate ledger keymr
 
     def marshal(self):
         """Marshals the factoid block according to the byte-level representation shown at
@@ -134,7 +145,7 @@ class FactoidBlock:
         next factoid block.
         """
         block, data = cls.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return block
 
     @classmethod
@@ -158,19 +169,19 @@ class FactoidBlock:
             tx, data = FactoidTransaction.unmarshal_with_remainder(data)
             current_minute_transactions.append(tx)
 
-        assert transaction_count == header.transaction_count, 'Unexpected transaction count!'
+        assert (
+            transaction_count == header.transaction_count
+        ), "Unexpected transaction count!"
 
-        return FactoidBlock(
-            header=header,
-            transactions=transactions
-        ), data
+        return FactoidBlock(header=header, transactions=transactions), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass
 
     def to_dict(self):
         pass
-    
-    def __str__(self):
-        return '{}(height={}, keymr={})'.format(self.__class__.__name__, self.header.height, self.keymr.hex())
 
+    def __str__(self):
+        return "{}(height={}, keymr={})".format(
+            self.__class__.__name__, self.header.height, self.keymr.hex()
+        )

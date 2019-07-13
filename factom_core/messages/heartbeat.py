@@ -1,7 +1,9 @@
 import struct
+from dataclasses import dataclass
 from factom_core.messages import Message
 
 
+@dataclass
 class Heartbeat(Message):
     """
     A heartbeat message for Audit Servers to send out
@@ -9,18 +11,18 @@ class Heartbeat(Message):
 
     TYPE = 10
 
-    def __init__(self, timestamp: bytes, secret_number: int, height: int, directory_block_hash: bytes, chain_id: bytes,
-                 public_key: bytes, signature: bytes):
+    timestamp: bytes
+    secret_number: int
+    height: int
+    directory_block_hash: bytes
+    chain_id: bytes
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.secret_number = secret_number
-        self.height = height
-        self.directory_block_hash = directory_block_hash
-        self.chain_id = chain_id
-        self.public_key = public_key
-        self.signature = signature
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -39,22 +41,22 @@ class Heartbeat(Message):
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.timestamp)
-        buf.extend(struct.pack('>I', self.secret_number))
-        buf.extend(struct.pack('>I', self.height))
+        buf.extend(struct.pack(">I", self.secret_number))
+        buf.extend(struct.pack(">I", self.height))
         buf.extend(self.chain_id)
         buf.extend(self.public_key)
         buf.extend(self.signature)
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         timestamp, data = data[:6], data[6:]
-        secret_number, data = struct.unpack('>I', data[:4])[0], data[4:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        secret_number, data = struct.unpack(">I", data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
         directory_block_hash, data = data[:32], data[32:]
         chain_id, data = data[:32], data[32:]
         public_key, data = data[:32], data[32:]

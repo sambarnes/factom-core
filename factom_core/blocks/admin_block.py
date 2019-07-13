@@ -1,36 +1,42 @@
 import hashlib
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.block_elements.admin_messages import *
 from factom_core.utils import varint
 
 
+@dataclass
 class AdminBlockHeader:
 
-    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000a")
+    CHAIN_ID = bytes.fromhex(
+        "000000000000000000000000000000000000000000000000000000000000000a"
+    )
 
-    def __init__(self, back_reference_hash: bytes, height: int, expansion_area: bytes,
-                 message_count: int, body_size: int):
-        self.back_reference_hash = back_reference_hash
-        self.height = height
-        self.expansion_area = expansion_area
-        self.message_count = message_count
-        self.body_size = body_size
+    back_reference_hash: bytes
+    height: int
+    expansion_area: bytes
+    message_count: int
+    body_size: int
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self) -> bytes:
         buf = bytearray()
         buf.extend(AdminBlockHeader.CHAIN_ID)
         buf.extend(self.back_reference_hash)
-        buf.extend(struct.pack('>I', self.height))
+        buf.extend(struct.pack(">I", self.height))
         buf.extend(varint.encode(len(self.expansion_area)))
         buf.extend(self.expansion_area)
-        buf.extend(struct.pack('>I', self.message_count))
-        buf.extend(struct.pack('>I', self.body_size))
+        buf.extend(struct.pack(">I", self.message_count))
+        buf.extend(struct.pack(">I", self.body_size))
         return bytes(buf)
 
     @classmethod
     def unmarshal(cls, raw: bytes):
         h, data = AdminBlockHeader.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return h
 
     @classmethod
@@ -38,31 +44,37 @@ class AdminBlockHeader:
         chain_id, data = raw[:32], raw[32:]
         assert chain_id == AdminBlockHeader.CHAIN_ID
         back_reference_hash, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
 
         expansion_size, data = varint.decode(data)
         expansion_area, data = data[:expansion_size], data[expansion_size:]
         # TODO: unmarshal header expansion area
 
-        message_count, data = struct.unpack('>I', data[:4])[0], data[4:]
-        body_size, data = struct.unpack('>I', data[:4])[0], data[4:]
-        return AdminBlockHeader(
-            back_reference_hash=back_reference_hash,
-            height=height,
-            expansion_area=expansion_area,
-            message_count=message_count,
-            body_size=body_size
-        ), data
+        message_count, data = struct.unpack(">I", data[:4])[0], data[4:]
+        body_size, data = struct.unpack(">I", data[:4])[0], data[4:]
+        return (
+            AdminBlockHeader(
+                back_reference_hash=back_reference_hash,
+                height=height,
+                expansion_area=expansion_area,
+                message_count=message_count,
+                body_size=body_size,
+            ),
+            data,
+        )
 
 
+@dataclass
 class AdminBlock:
 
-    def __init__(self, header: AdminBlockHeader, messages: list):
-        self.header = header
-        self.messages = messages
-        # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
-        self._cached_lookup_hash = None
+    header: AdminBlockHeader
+    messages: list
+
+    _cached_lookup_hash: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
     def lookup_hash(self):
@@ -92,7 +104,7 @@ class AdminBlock:
         AdminBlock created will not include contextual metadata, such as timestamp
         """
         block, data = cls.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return block
 
     @classmethod
@@ -174,17 +186,20 @@ class AdminBlock:
 
             elif admin_id <= 0x0E:
                 msg = admin_id
-                print("Unsupported admin message type {} found at Admin Block {}".format(admin_id, header.height))
+                print(
+                    "Unsupported admin message type {} found at Admin Block {}".format(
+                        admin_id, header.height
+                    )
+                )
 
             if msg is not None:
                 messages.append(msg)
 
-        assert len(messages) == header.message_count, 'Unexpected message count at Admin Block {}'.format(header.height)
+        assert (
+            len(messages) == header.message_count
+        ), "Unexpected message count at Admin Block {}".format(header.height)
 
-        return AdminBlock(
-            header=header,
-            messages=messages
-        ), data
+        return AdminBlock(header=header, messages=messages), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass
@@ -193,4 +208,6 @@ class AdminBlock:
         pass
 
     def __str__(self):
-        return '{}(height={}, hash={})'.format(self.__class__.__name__, self.header.height, self.lookup_hash.hex())
+        return "{}(height={}, hash={})".format(
+            self.__class__.__name__, self.header.height, self.lookup_hash.hex()
+        )

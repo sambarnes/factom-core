@@ -1,8 +1,10 @@
 import struct
+from dataclasses import dataclass
 from factom_core.messages import Message
 from factom_core.utils import varint
 
 
+@dataclass
 class Ack(Message):
     """
     A acknowledgement for a given message
@@ -10,25 +12,23 @@ class Ack(Message):
 
     TYPE = 1
 
-    def __init__(self, vm_index: int, timestamp: bytes, salt: bytes, salt_number: int, message_hash: bytes,
-                 full_message_hash: bytes, leader_chain_id: bytes, height: int, process_list_height: int, minute: int,
-                 serial_hash: bytes, data_area: bytes, public_key: bytes, signature: bytes):
-        # TODO: type/value assertions
-        self.vm_index = vm_index
-        self.timestamp = timestamp
-        self.salt = salt
-        self.salt_number = salt_number
-        self.message_hash = message_hash
-        self.full_message_hash = full_message_hash
-        self.leader_chain_id = leader_chain_id
-        self.height = height
-        self.process_list_height = process_list_height
-        self.minute = minute
-        self.serial_hash = serial_hash
-        self.data_area = data_area
-        self.public_key = public_key
-        self.signature = signature
+    vm_index: int
+    timestamp: bytes
+    salt: bytes
+    salt_number: int
+    message_hash: bytes
+    full_message_hash: bytes
+    leader_chain_id: bytes
+    height: int
+    process_list_height: int
+    minute: int
+    serial_hash: bytes
+    data_area: bytes
+    public_key: bytes
+    signature: bytes
 
+    def __post_init__(self):
+        # TODO: type/value assertions
         self.is_p2p = True
         super().__init__()
 
@@ -60,12 +60,12 @@ class Ack(Message):
         buf.append(self.vm_index)
         buf.extend(self.timestamp)
         buf.extend(self.salt)
-        buf.extend(struct.pack('>I', self.salt_number))
+        buf.extend(struct.pack(">I", self.salt_number))
         buf.extend(self.message_hash)
         buf.extend(self.full_message_hash)
         buf.extend(self.leader_chain_id)
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(struct.pack('>I', self.process_list_height))
+        buf.extend(struct.pack(">I", self.height))
+        buf.extend(struct.pack(">I", self.process_list_height))
         buf.append(self.minute)
         buf.extend(self.serial_hash)
         buf.extend(varint.encode(len(self.data_area)))
@@ -75,7 +75,7 @@ class Ack(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -83,12 +83,12 @@ class Ack(Message):
         vm_index, data = data[0], data[1:]
         timestamp, data = data[:6], data[6:]
         salt, data = data[:8], data[8:]
-        salt_number, data = struct.unpack('>I', data[:4])[0], data[4:]
+        salt_number, data = struct.unpack(">I", data[:4])[0], data[4:]
         message_hash, data = data[:32], data[32:]
         full_message_hash, data = data[:32], data[32:]
         leader_chain_id, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        process_list_height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        process_list_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         minute, data = data[0], data[1:]
         serial_hash, data = data[:32], data[32:]
         data_area_size, data = varint.decode(data)

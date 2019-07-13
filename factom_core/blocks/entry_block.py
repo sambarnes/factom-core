@@ -1,20 +1,22 @@
 import struct
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.utils import merkle
 
 
+@dataclass
 class EntryBlockHeader:
     LENGTH = 140
 
-    def __init__(self, chain_id: bytes, body_mr: bytes, prev_keymr: bytes, prev_full_hash: bytes,
-                 sequence: int, height: int, entry_count: int):
-        self.chain_id = chain_id
-        self.body_mr = body_mr
-        self.prev_keymr = prev_keymr
-        self.prev_full_hash = prev_full_hash
-        self.sequence = sequence
-        self.height = height
-        self.entry_count = entry_count
+    """Header section of an Entry Block, built from the body or unmarshalled from raw bytes"""
+
+    chain_id: bytes
+    body_mr: bytes
+    prev_keymr: bytes
+    prev_full_hash: bytes
+    sequence: int
+    height: int
+    entry_count: int
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -22,22 +24,24 @@ class EntryBlockHeader:
         buf.extend(self.body_mr)
         buf.extend(self.prev_keymr)
         buf.extend(self.prev_full_hash)
-        buf.extend(struct.pack('>I', self.sequence))
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(struct.pack('>I', self.entry_count))
+        buf.extend(struct.pack(">I", self.sequence))
+        buf.extend(struct.pack(">I", self.height))
+        buf.extend(struct.pack(">I", self.entry_count))
         return bytes(buf)
 
     @classmethod
     def unmarshal(cls, raw: bytes):
         if len(raw) != EntryBlockHeader.LENGTH:
-            raise ValueError("`raw` must be exactly {} bytes long".format(EntryBlockHeader.LENGTH))
+            raise ValueError(
+                "`raw` must be exactly {} bytes long".format(EntryBlockHeader.LENGTH)
+            )
         chain_id, data = raw[:32], raw[32:]
         body_mr, data = data[:32], data[32:]
         prev_keymr, data = data[:32], data[32:]
         prev_full_hash, data = data[:32], data[32:]
-        sequence, data = struct.unpack('>I', data[:4])[0], data[4:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        entry_count, data = struct.unpack('>I', data[:4])[0], data[4:]
+        sequence, data = struct.unpack(">I", data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        entry_count, data = struct.unpack(">I", data[:4])[0], data[4:]
         return EntryBlockHeader(
             chain_id=chain_id,
             body_mr=body_mr,
@@ -45,23 +49,25 @@ class EntryBlockHeader:
             prev_full_hash=prev_full_hash,
             sequence=sequence,
             height=height,
-            entry_count=entry_count
+            entry_count=entry_count,
         )
 
 
+@dataclass()
 class EntryBlock:
-    def __init__(self, header: EntryBlockHeader, entry_hashes: dict, **kwargs):
-        # Required fields. Must be in every EntryBlock
-        self.header = header
-        self.entry_hashes = entry_hashes
+
+    header: EntryBlockHeader
+    entry_hashes: dict
+    _cached_keymr: bytes = None
+    _cached_body_mr: bytes = None
+
+    def __post_init__(self, **kwargs):
         # TODO: assert they're all here
-        self._cached_keymr = None
-        self._cached_body_mr = None
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
-        self.directory_block_keymr = kwargs.get('directory_block_keymr')
-        self.timestamp = kwargs.get('timestamp')
-        self.next_keymr = kwargs.get('next_keymr')
+        self.directory_block_keymr = kwargs.get("directory_block_keymr")
+        self.timestamp = kwargs.get("timestamp")
+        self.next_keymr = kwargs.get("next_keymr")
 
     @property
     def body_mr(self):
@@ -113,12 +119,15 @@ class EntryBlock:
         next entry block.
         """
         block, data = cls.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return block
 
     @classmethod
     def unmarshal_with_remainder(cls, raw: bytes):
-        header_data, data = raw[:EntryBlockHeader.LENGTH], raw[EntryBlockHeader.LENGTH:]
+        header_data, data = (
+            raw[: EntryBlockHeader.LENGTH],
+            raw[EntryBlockHeader.LENGTH :],
+        )
         header = EntryBlockHeader.unmarshal(header_data)
 
         # Entry hashes are listed in order, with a minute marker following what minute those entries were in
@@ -133,10 +142,7 @@ class EntryBlock:
             else:
                 current_minute_entries.append(entry_hash)
 
-        return EntryBlock(
-            header=header,
-            entry_hashes=entry_hashes,
-        ), data
+        return EntryBlock(header=header, entry_hashes=entry_hashes), data
 
     def add_context(self, directory_block: DirectoryBlock):
         self.directory_block_keymr = directory_block.keymr
@@ -145,18 +151,20 @@ class EntryBlock:
     def to_dict(self):
         return {
             # Required
-            'keymr': self.keymr,
-            'chain_id': self.header.chain_id,
-            'prev_keymr': self.header.prev_keymr,
-            'prev_full_hash': self.header.prev_full_hash,
-            'sequence': self.header.sequence,
-            'height': self.header.height,
-            'entry_hashes': self.entry_hashes,
+            "keymr": self.keymr,
+            "chain_id": self.header.chain_id,
+            "prev_keymr": self.header.prev_keymr,
+            "prev_full_hash": self.header.prev_full_hash,
+            "sequence": self.header.sequence,
+            "height": self.header.height,
+            "entry_hashes": self.entry_hashes,
             # Optional contextual
-            'directory_block_keymr': self.directory_block_keymr,
-            'timestamp': self.timestamp,
-            'next_keymr': self.next_keymr
+            "directory_block_keymr": self.directory_block_keymr,
+            "timestamp": self.timestamp,
+            "next_keymr": self.next_keymr,
         }
 
     def __str__(self):
-        return '{}(height={}, keymr={})'.format(self.__class__.__name__, self.header.height, self.keymr.hex())
+        return "{}(height={}, keymr={})".format(
+            self.__class__.__name__, self.header.height, self.keymr.hex()
+        )

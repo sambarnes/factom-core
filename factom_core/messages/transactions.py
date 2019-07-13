@@ -1,7 +1,9 @@
 import factom_core.block_elements as block_elements
+from dataclasses import dataclass
 from factom_core.messages import Message
 
 
+@dataclass
 class FactoidTransaction(Message):
     """
     A message holding a FactoidTransaction object.
@@ -9,10 +11,11 @@ class FactoidTransaction(Message):
 
     TYPE = 9
 
-    def __init__(self, tx: block_elements.FactoidTransaction):
+    tx: block_elements.FactoidTransaction
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.tx = tx
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -28,7 +31,7 @@ class FactoidTransaction(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -36,6 +39,7 @@ class FactoidTransaction(Message):
         return FactoidTransaction(tx=tx)
 
 
+@dataclass
 class ChainCommit(Message):
     """
     A message holding a ChainCommit object.
@@ -43,12 +47,13 @@ class ChainCommit(Message):
 
     TYPE = 5
 
-    def __init__(self, commit: block_elements.ChainCommit, public_key: bytes, signature: bytes):
+    commit: block_elements.ChainCommit
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.commit = commit
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -68,27 +73,29 @@ class ChainCommit(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         commit_size = block_elements.ChainCommit.BITLENGTH
-        commit, data = block_elements.ChainCommit.unmarshal(data[:commit_size]), data[commit_size:]
+        commit, data = (
+            block_elements.ChainCommit.unmarshal(data[:commit_size]),
+            data[commit_size:],
+        )
 
-        if len(data) > 0:  # TODO: found in factomd code, is this actually not signed sometimes?
+        if (
+            len(data) > 0
+        ):  # TODO: found in factomd code, is this actually not signed sometimes?
             public_key, data = data[:32], data[32:]
             signature, data = data[:64], data[64:]
         else:
-            signature, public_key = b'', b''
+            signature, public_key = b"", b""
 
-        return ChainCommit(
-            commit=commit,
-            public_key=public_key,
-            signature=signature,
-        )
+        return ChainCommit(commit=commit, public_key=public_key, signature=signature)
 
 
+@dataclass
 class EntryCommit(Message):
     """
     A message holding a EntryCommit object.
@@ -96,12 +103,13 @@ class EntryCommit(Message):
 
     TYPE = 6
 
-    def __init__(self, commit: block_elements.EntryCommit, public_key: bytes, signature: bytes):
+    commit: block_elements.EntryCommit
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.commit = commit
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -121,27 +129,29 @@ class EntryCommit(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         commit_size = block_elements.EntryCommit.BITLENGTH
-        commit, data = block_elements.EntryCommit.unmarshal(data[:commit_size]), data[commit_size:]
+        commit, data = (
+            block_elements.EntryCommit.unmarshal(data[:commit_size]),
+            data[commit_size:],
+        )
 
-        if len(data) > 0:  # TODO: found in factomd code, is this actually not signed sometimes?
+        if (
+            len(data) > 0
+        ):  # TODO: found in factomd code, is this actually not signed sometimes?
             public_key, data = data[:32], data[32:]
             signature, data = data[:64], data[64:]
         else:
-            public_key, signature = b'', b''
+            public_key, signature = b"", b""
 
-        return EntryCommit(
-            commit=commit,
-            public_key=public_key,
-            signature=signature,
-        )
+        return EntryCommit(commit=commit, public_key=public_key, signature=signature)
 
 
+@dataclass
 class EntryReveal(Message):
     """
     A message holding an Entry object to be revealed (can reveal a Chain as well)
@@ -149,10 +159,12 @@ class EntryReveal(Message):
 
     TYPE = 13
 
-    def __init__(self, timestamp: bytes, entry: block_elements.Entry):
-        self.timestamp = timestamp
-        self.entry = entry
-        super().__init__()
+    timestamp: bytes
+    entry: block_elements.Entry
+
+    def __post_init__(self):
+        # TODO: type/value assertions
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -170,14 +182,11 @@ class EntryReveal(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         timestamp, data = data[:6], data[6:]
         entry = block_elements.Entry.unmarshal(data)
-        return EntryReveal(
-            timestamp=timestamp,
-            entry=entry,
-        )
+        return EntryReveal(timestamp=timestamp, entry=entry)
