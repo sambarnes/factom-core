@@ -1,15 +1,18 @@
+from dataclasses import  dataclass
 from hashlib import sha256
 from .entry import Entry
 
 
+@dataclass
 class Chain:
-    def __init__(self, chain_id: bytes, first_entry: Entry, **kwargs):
-        self.chain_id = chain_id
-        self.first_entry = first_entry
+
+    chain_id: bytes
+    first_entry: Entry
+
+    def __post_init__(self):
         # TODO: do we need these safety checks?
         assert self.chain_id == self._calculate_chain_id(), 'chain_id does not match external_ids'
         assert isinstance(self.first_entry, Entry), 'first_entry must be of type models.Entry'
-        # TODO: use kwargs for some optional metadata
 
     def _calculate_chain_id(self):
         """Returns the chain id in bytes. The algorithm used is shown at:

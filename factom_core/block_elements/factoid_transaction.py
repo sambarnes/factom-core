@@ -1,18 +1,20 @@
 import hashlib
+from dataclasses import dataclass
 from factom_core.utils import varint
 
 
+@dataclass
 class FactoidTransaction:
 
-    def __init__(self, timestamp: bytes, inputs: list, outputs: list, ec_purchases: list, rcds: list, **kwargs):
-        # Required fields. Must be in every FactoidTransaction
-        self.timestamp = timestamp
-        self.inputs = inputs
-        self.outputs = outputs
-        self.ec_purchases = ec_purchases
-        self.rcds = rcds
+    timestamp: bytes
+    inputs: list
+    outputs: list
+    ec_purchases: list
+    rcds: list
+
+    def __ipost_nit__(self):
         # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
+        pass
 
     def is_coinbase(self):
         # TODO: Coinbase outputs be zero too right? Just matters that everything else is definitely zero
@@ -125,4 +127,3 @@ class FactoidTransaction:
         # TODO: convert timestamp to readable
         return '{}(timestamp={}, inputs={}, outputs={}, ec_purchases={})'.format(
             self.__class__.__name__, self.timestamp, len(self.inputs), len(self.outputs), len(self.ec_purchases))
-

@@ -1,7 +1,9 @@
 import struct
+from dataclasses import dataclass
 from factom_core.messages import Message
 
 
+@dataclass
 class Heartbeat(Message):
     """
     A heartbeat message for Audit Servers to send out
@@ -9,18 +11,18 @@ class Heartbeat(Message):
 
     TYPE = 10
 
-    def __init__(self, timestamp: bytes, secret_number: int, height: int, directory_block_hash: bytes, chain_id: bytes,
-                 public_key: bytes, signature: bytes):
+    timestamp: bytes
+    secret_number: int
+    height: int
+    directory_block_hash: bytes
+    chain_id: bytes
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.secret_number = secret_number
-        self.height = height
-        self.directory_block_hash = directory_block_hash
-        self.chain_id = chain_id
-        self.public_key = public_key
-        self.signature = signature
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """

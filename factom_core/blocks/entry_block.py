@@ -1,20 +1,22 @@
 import struct
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.utils import merkle
 
 
+@dataclass
 class EntryBlockHeader:
     LENGTH = 140
 
-    def __init__(self, chain_id: bytes, body_mr: bytes, prev_keymr: bytes, prev_full_hash: bytes,
-                 sequence: int, height: int, entry_count: int):
-        self.chain_id = chain_id
-        self.body_mr = body_mr
-        self.prev_keymr = prev_keymr
-        self.prev_full_hash = prev_full_hash
-        self.sequence = sequence
-        self.height = height
-        self.entry_count = entry_count
+    '''Header section of an Entry Block, built from the body or unmarshalled from raw bytes'''
+
+    chain_id: bytes
+    body_mr: bytes
+    prev_keymr: bytes
+    prev_full_hash: bytes
+    sequence: int
+    height: int
+    entry_count: int
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -49,14 +51,16 @@ class EntryBlockHeader:
         )
 
 
+@dataclass()
 class EntryBlock:
-    def __init__(self, header: EntryBlockHeader, entry_hashes: dict, **kwargs):
-        # Required fields. Must be in every EntryBlock
-        self.header = header
-        self.entry_hashes = entry_hashes
+
+    header: EntryBlockHeader
+    entry_hashes: dict
+    _cached_keymr: bytes = None
+    _cached_body_mr: bytes = None
+
+    def __post_init__(self, **kwargs):
         # TODO: assert they're all here
-        self._cached_keymr = None
-        self._cached_body_mr = None
 
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
         self.directory_block_keymr = kwargs.get('directory_block_keymr')

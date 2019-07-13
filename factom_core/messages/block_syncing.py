@@ -1,4 +1,5 @@
 import struct
+from dataclasses import dataclass
 from factom_core.blocks import (
     DirectoryBlock,
     AdminBlock,
@@ -34,6 +35,7 @@ class SignatureList(list):  # TODO: should this go in a separate module or packa
         return SignatureList(signatures)
 
 
+@dataclass
 class DirectoryBlockState(Message):
     """
     A message to communicate a Directory Block State
@@ -41,20 +43,19 @@ class DirectoryBlockState(Message):
 
     TYPE = 20
 
-    def __init__(self, timestamp: bytes, directory_block: DirectoryBlock, admin_block: AdminBlock,
-                 factoid_block: FactoidBlock, entry_credit_block: EntryCreditBlock, entry_blocks: list, entries: list,
-                 signatures: SignatureList):
+    timestamp: bytes
+    directory_block: DirectoryBlock
+    admin_block: AdminBlock
+    factoid_block: FactoidBlock
+    entry_credit_block: EntryCreditBlock
+    entry_blocks: list
+    entries: list
+    signatures: SignatureList
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.directory_block = directory_block
-        self.admin_block = admin_block
-        self.factoid_block = factoid_block
-        self.entry_credit_block = entry_credit_block
-        self.entry_blocks = entry_blocks
-        self.entries = entries  # TODO: can we just remove the entry field? It's no longer passed over the network
-        self.signatures = signatures
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -136,6 +137,7 @@ class DirectoryBlockState(Message):
         return '{}()'.format(self.__class__.__name__)
 
 
+@dataclass
 class DirectoryBlockStateRequest(Message):
     """
     A request for missing DBState objects.
@@ -143,13 +145,14 @@ class DirectoryBlockStateRequest(Message):
 
     TYPE = 21
 
-    def __init__(self, timestamp: bytes, block_height_start: int, block_height_end: int):
+    timestamp: bytes
+    block_height_start: int
+    block_height_end: int
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.block_height_start = block_height_start
-        self.block_height_end = block_height_end
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -189,6 +192,7 @@ class DirectoryBlockStateRequest(Message):
         return '{}()'.format(self.__class__.__name__)
 
 
+@dataclass()
 class BlockRequest(Message):
     """
     An unimplemented message. I assume for requesting single blocks of any type.
@@ -196,10 +200,11 @@ class BlockRequest(Message):
 
     TYPE = 14
 
-    def __init__(self, timestamp: bytes):
+    timestamp: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """

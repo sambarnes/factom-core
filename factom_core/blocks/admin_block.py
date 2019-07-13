@@ -1,20 +1,24 @@
 import hashlib
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.block_elements.admin_messages import *
 from factom_core.utils import varint
 
 
+@dataclass
 class AdminBlockHeader:
 
     CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000a")
 
-    def __init__(self, back_reference_hash: bytes, height: int, expansion_area: bytes,
-                 message_count: int, body_size: int):
-        self.back_reference_hash = back_reference_hash
-        self.height = height
-        self.expansion_area = expansion_area
-        self.message_count = message_count
-        self.body_size = body_size
+    back_reference_hash: bytes
+    height: int
+    expansion_area: bytes
+    message_count: int
+    body_size: int
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -55,14 +59,17 @@ class AdminBlockHeader:
         ), data
 
 
+@dataclass
 class AdminBlock:
 
-    def __init__(self, header: AdminBlockHeader, messages: list):
-        self.header = header
-        self.messages = messages
-        # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
-        self._cached_lookup_hash = None
+    header: AdminBlockHeader
+    messages: list
+
+    _cached_lookup_hash: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
     def lookup_hash(self):

@@ -1,23 +1,29 @@
 import struct
+from dataclasses import dataclass
 from factom_core.blocks.entry_block import EntryBlock
 from hashlib import sha256, sha512
 
 
+@dataclass
 class Entry:
-    def __init__(self, chain_id: bytes, external_ids: list, content: bytes, **kwargs):
-        # Required fields. Must be in every Entry
-        self.chain_id = chain_id
-        self.external_ids = external_ids
-        self.content = content
-        # TODO: assert they're all here
-        self._cached_entry_hash = None
 
+    chain_id: bytes
+    external_ids: list
+    content: bytes
+
+    _cached_entry_hash: bytes = None
+
+    directory_block_keymr: bytes = None
+    entry_block_keymr: bytes = None
+    height: int = None
+    timestamp: int = None
+    stage: str = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
-        self.directory_block_keymr = kwargs.get('directory_block_keymr')
-        self.entry_block_keymr = kwargs.get('entry_block_keymr')
-        self.height = kwargs.get('height')
-        self.timestamp = kwargs.get('timestamp')
-        self.stage = kwargs.get('stage', 'replicated')
+
 
     @property
     def entry_hash(self):

@@ -1,7 +1,9 @@
 import factom_core.block_elements as block_elements
+from dataclasses import dataclass
 from factom_core.messages import Message
 
 
+@dataclass
 class FactoidTransaction(Message):
     """
     A message holding a FactoidTransaction object.
@@ -9,10 +11,11 @@ class FactoidTransaction(Message):
 
     TYPE = 9
 
-    def __init__(self, tx: block_elements.FactoidTransaction):
+    tx: block_elements.FactoidTransaction
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.tx = tx
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -36,6 +39,7 @@ class FactoidTransaction(Message):
         return FactoidTransaction(tx=tx)
 
 
+@dataclass
 class ChainCommit(Message):
     """
     A message holding a ChainCommit object.
@@ -43,12 +47,13 @@ class ChainCommit(Message):
 
     TYPE = 5
 
-    def __init__(self, commit: block_elements.ChainCommit, public_key: bytes, signature: bytes):
+    commit: block_elements.ChainCommit
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.commit = commit
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -89,6 +94,7 @@ class ChainCommit(Message):
         )
 
 
+@dataclass
 class EntryCommit(Message):
     """
     A message holding a EntryCommit object.
@@ -96,12 +102,13 @@ class EntryCommit(Message):
 
     TYPE = 6
 
-    def __init__(self, commit: block_elements.EntryCommit, public_key: bytes, signature: bytes):
+    commit: block_elements.EntryCommit
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.commit = commit
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -142,6 +149,7 @@ class EntryCommit(Message):
         )
 
 
+@dataclass
 class EntryReveal(Message):
     """
     A message holding an Entry object to be revealed (can reveal a Chain as well)
@@ -149,10 +157,12 @@ class EntryReveal(Message):
 
     TYPE = 13
 
-    def __init__(self, timestamp: bytes, entry: block_elements.Entry):
-        self.timestamp = timestamp
-        self.entry = entry
-        super().__init__()
+    timestamp: bytes
+    entry: block_elements.Entry
+
+    def __post_init__(self):
+        # TODO: type/value assertions
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """

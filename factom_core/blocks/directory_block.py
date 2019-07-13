@@ -1,20 +1,24 @@
 import factom_core
 import struct
+from dataclasses import dataclass
 from factom_core.utils import merkle
 
 
+@dataclass
 class DirectoryBlockHeader:
     LENGTH = 113
 
-    def __init__(self, network_id: bytes, body_mr: bytes, prev_keymr: bytes, prev_full_hash: bytes, timestamp: int,
-                 height: int, block_count: int):
-        self.network_id = network_id
-        self.body_mr = body_mr
-        self.prev_keymr = prev_keymr
-        self.prev_full_hash = prev_full_hash
-        self.timestamp = timestamp
-        self.height = height
-        self.block_count = block_count
+    network_id: bytes
+    body_mr: bytes
+    prev_keymr: bytes
+    prev_full_hash: bytes
+    timestamp: int
+    height: int
+    block_count: int
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self):
         buf = bytearray()
@@ -51,19 +55,20 @@ class DirectoryBlockHeader:
         )
 
 
+@dataclass
 class DirectoryBlock:
 
-    def __init__(self, header: DirectoryBlockHeader, admin_block_lookup_hash: bytes,
-                 entry_credit_block_header_hash:  bytes, factoid_block_keymr:  bytes, entry_blocks: list, **kwargs):
-        # Required fields
-        self.header = header
-        self.admin_block_lookup_hash = admin_block_lookup_hash
-        self.entry_credit_block_header_hash = entry_credit_block_header_hash
-        self.factoid_block_keymr = factoid_block_keymr
-        self.entry_blocks = entry_blocks
+    header: DirectoryBlockHeader
+    admin_block_lookup_hash: bytes
+    entry_credit_block_header_hash: bytes
+    factoid_block_keymr: bytes
+    entry_blocks: list
+
+    _cached_keymr: bytes = None
+    _cached_body_mr: bytes = None
+
+    def ___post_init__(self, **kwargs):
         # TODO: assert they're all here
-        self._cached_keymr = None
-        self._cached_body_mr = None
 
         # Optional contextual fields
         self.next_keymr = kwargs.get('next_keymr')

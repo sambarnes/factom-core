@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 
 
+@dataclass
 class Message:
     """
     A message for VM execution.
@@ -31,7 +33,7 @@ class Message:
         'is_sig_valid',
     ]
 
-    def __init__(self):
+    def __post_init__(self):
         if self.TYPE is None:
             raise ValueError("A Message class must be instantiated with a `TYPE`")
 

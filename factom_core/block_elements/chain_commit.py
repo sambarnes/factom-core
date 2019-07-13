@@ -1,20 +1,23 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class ChainCommit:
 
     ECID = 0x02
     BITLENGTH = 200
 
-    def __init__(self, timestamp: bytes, chain_id_hash: bytes, commit_weld: bytes, entry_hash: bytes,
-                 ec_spent: int, ec_public_key: bytes, signature: bytes, **kwargs):
-        # Required fields. Must be in every ChainCommit
-        self.timestamp = timestamp
-        self.chain_id_hash = chain_id_hash
-        self.commit_weld = commit_weld
-        self.entry_hash = entry_hash
-        self.ec_spent = ec_spent
-        self.ec_public_key = ec_public_key
-        self.signature = signature
-        # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
+    timestamp: bytes
+    chain_id_hash: bytes
+    commit_weld: bytes
+    entry_hash: bytes
+    ec_spent: int
+    ec_public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self):
         """Marshals the ChainCommit according to the byte-level representation shown at

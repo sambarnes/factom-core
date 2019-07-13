@@ -1,18 +1,21 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class EntryCommit:
 
     ECID = 0x03
     BITLENGTH = 136
 
-    def __init__(self,timestamp: bytes, entry_hash: bytes, ec_spent: int, ec_public_key: bytes, signature: bytes,
-                 **kwargs):
-        # Required fields. Must be in every EntryCommit
-        self.timestamp = timestamp
-        self.entry_hash = entry_hash
-        self.ec_spent = ec_spent
-        self.ec_public_key = ec_public_key
-        self.signature = signature
+    timestamp: bytes
+    entry_hash: bytes
+    ec_spent: int
+    ec_public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
+        pass
 
     def marshal(self):
         """Marshals the EntryCommit according to the byte-level representation shown at

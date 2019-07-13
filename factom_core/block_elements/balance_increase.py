@@ -1,17 +1,19 @@
+from dataclasses import dataclass
 from factom_core.utils import varint
 
 
+@dataclass
 class BalanceIncrease:
     ECID = 0x04
 
-    def __init__(self, ec_public_key: bytes, tx_id: bytes, index: int, quantity: int, **kwargs):
-        # Required fields. Must be in every BalanceIncrease
-        self.ec_public_key = ec_public_key
-        self.tx_id = tx_id
-        self.index = index
-        self.quantity = quantity
+    ec_public_key: bytes
+    tx_id: bytes
+    index: int
+    quantity: int
+
+    def __post_init__(self):
         # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
+        pass
 
     def marshal(self):
         """Marshals the BalanceIncrease according to the byte-level representation shown at

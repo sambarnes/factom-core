@@ -1,7 +1,8 @@
 import struct
+from dataclasses import dataclass
 from factom_core.messages import Message
 
-
+@dataclass
 class MissingMessageRequest(Message):
     """
     A request for a missing message in a node's process list
@@ -9,17 +10,17 @@ class MissingMessageRequest(Message):
 
     TYPE = 16
 
-    def __init__(self, timestamp: bytes, asking: bytes, vm_index: int, height: int, system_height: int,
-                 process_list_heights: list):
+    timestamp: bytes
+    asking: bytes
+    vm_index: int
+    height: int
+    system_height: int
+    process_list_heights: list
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.asking = asking
-        self.vm_index = vm_index
-        self.height = height
-        self.system_height = system_height
-        self.process_list_heights = process_list_heights
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -77,6 +78,7 @@ class MissingMessageRequest(Message):
         return '{}(hash={})'.format(self.__class__.__name__, self.asking)
 
 
+@dataclass
 class MissingMessageResponse(Message):
     """
     A response to a MissingMessageRequest, containing the requested message
@@ -84,12 +86,12 @@ class MissingMessageResponse(Message):
 
     TYPE = 19
 
-    def __init__(self, timestamp: bytes):
-        # TODO: type/value assertions
-        self.timestamp = timestamp
+    timestamp: bytes
 
+    def __post_init__(self):
+        # TODO: type/value assertions
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """

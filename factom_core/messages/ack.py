@@ -1,8 +1,10 @@
 import struct
+from dataclasses import dataclass
 from factom_core.messages import Message
 from factom_core.utils import varint
 
 
+@dataclass
 class Ack(Message):
     """
     A acknowledgement for a given message
@@ -10,25 +12,23 @@ class Ack(Message):
 
     TYPE = 1
 
-    def __init__(self, vm_index: int, timestamp: bytes, salt: bytes, salt_number: int, message_hash: bytes,
-                 full_message_hash: bytes, leader_chain_id: bytes, height: int, process_list_height: int, minute: int,
-                 serial_hash: bytes, data_area: bytes, public_key: bytes, signature: bytes):
-        # TODO: type/value assertions
-        self.vm_index = vm_index
-        self.timestamp = timestamp
-        self.salt = salt
-        self.salt_number = salt_number
-        self.message_hash = message_hash
-        self.full_message_hash = full_message_hash
-        self.leader_chain_id = leader_chain_id
-        self.height = height
-        self.process_list_height = process_list_height
-        self.minute = minute
-        self.serial_hash = serial_hash
-        self.data_area = data_area
-        self.public_key = public_key
-        self.signature = signature
+    vm_index: int
+    timestamp: bytes
+    salt: bytes
+    salt_number: int
+    message_hash: bytes
+    full_message_hash: bytes
+    leader_chain_id: bytes
+    height: int
+    process_list_height: int
+    minute: int
+    serial_hash: bytes
+    data_area: bytes
+    public_key: bytes
+    signature: bytes
 
+    def __post_init__(self):
+        # TODO: type/value assertions
         self.is_p2p = True
         super().__init__()
 

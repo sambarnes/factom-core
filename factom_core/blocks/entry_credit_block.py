@@ -1,25 +1,29 @@
 import hashlib
 import struct
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.block_elements.balance_increase import BalanceIncrease
 from factom_core.block_elements.chain_commit import ChainCommit
 from factom_core.block_elements.entry_commit import EntryCommit
 from factom_core.utils import varint
 
 
+@dataclass
 class EntryCreditBlockHeader:
 
     CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000c")
 
-    def __init__(self, body_hash: bytes, prev_header_hash: bytes, prev_full_hash: bytes, height: int,
-                 expansion_area: bytes, object_count: int, body_size: int):
-        self.body_hash = body_hash
-        self.prev_header_hash = prev_header_hash
-        self.prev_full_hash = prev_full_hash
-        self.height = height
-        self.expansion_area = expansion_area
-        self.object_count = object_count
-        self.body_size = body_size
+    body_hash: bytes
+    prev_header_hash: bytes
+    prev_full_hash: bytes
+    height: int
+    expansion_area: bytes
+    object_count: int
+    body_size: int
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -66,15 +70,17 @@ class EntryCreditBlockHeader:
         ), data
 
 
+@dataclass
 class EntryCreditBlock:
 
-    def __init__(self, header: EntryCreditBlockHeader, objects: dict, **kwargs):
-        # Required fields. Must be in every EntryBlock
-        self.header = header
-        self.objects = objects
-        # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
-        self._cached_header_hash = None
+    header: EntryCreditBlockHeader
+    objects: dict
+
+    _cached_header_hash: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
     def header_hash(self):

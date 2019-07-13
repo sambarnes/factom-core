@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from factom_core.block_elements import Entry
 from factom_core.blocks import EntryBlock
 from factom_core.messages import Message
 
 
+@dataclass
 class MissingDataRequest(Message):
     """
     A request for an entry or entry block. Used when entry syncing.
@@ -10,12 +12,13 @@ class MissingDataRequest(Message):
 
     TYPE = 17
 
-    def __init__(self, timestamp: bytes, request_hash: bytes):
+    timestamp: bytes
+    request_hash: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.request_hash = request_hash
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -50,17 +53,20 @@ class MissingDataRequest(Message):
         return '{}(hash={})'.format(self.__class__.__name__, self.request_hash)
 
 
+@dataclass
 class MissingDataResponse(Message):
     """
     A response to a MissingDataRequest, including the Entry or Entry Block requested.
     """
     TYPE = 18
 
-    def __init__(self, requested_object):
-        # TODO: type/value assertions
-        self.requested_object = requested_object
+    requested_object: object
+
+    def __post_init__(self):
+        if type(self.requested_object) not in {Entry, EntryBlock}:
+            raise ValueError("requested_object must be an Entry or Entry Block")
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """

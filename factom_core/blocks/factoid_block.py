@@ -1,6 +1,7 @@
 import hashlib
 import struct
 from .directory_block import DirectoryBlock
+from dataclasses import dataclass
 from factom_core.block_elements.factoid_transaction import FactoidTransaction
 from factom_core.utils import (
     merkle,
@@ -8,20 +9,23 @@ from factom_core.utils import (
 )
 
 
+@dataclass
 class FactoidBlockHeader:
 
     CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000f")
 
-    def __init__(self, body_mr: bytes, prev_keymr: bytes, prev_ledger_keymr: bytes, ec_exchange_rate: int, height: int,
-                 expansion_area: bytes, transaction_count: int, body_size: int):
-        self.body_mr = body_mr
-        self.prev_keymr = prev_keymr
-        self.prev_ledger_keymr = prev_ledger_keymr
-        self.ec_exchange_rate = ec_exchange_rate
-        self.height = height
-        self.expansion_area = expansion_area
-        self.transaction_count = transaction_count
-        self.body_size = body_size
+    body_mr: bytes
+    prev_keymr: bytes
+    prev_ledger_keymr: bytes
+    ec_exchange_rate: int
+    height: int
+    expansion_area: bytes
+    transaction_count: int
+    body_size: int
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     def marshal(self) -> bytes:
         buf = bytearray()
@@ -70,16 +74,18 @@ class FactoidBlockHeader:
         ), data
 
 
+@dataclass
 class FactoidBlock:
 
-    def __init__(self, header: FactoidBlockHeader, transactions: dict, **kwargs):
-        # Required fields. Must be in every FactoidBlock
-        self.header = header
-        self.transactions = transactions
-        # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
-        self._cached_keymr = None
-        self._cached_body_mr = None
+    header: FactoidBlockHeader
+    transactions: dict
+
+    _cached_keymr: bytes = None
+    _cached_body_mr: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
     def body_mr(self):
@@ -107,7 +113,7 @@ class FactoidBlock:
 
     @property
     def ledger_keymr(self):
-        pass # TODO: calculate ledger keymr
+        pass  # TODO: calculate ledger keymr
 
     def marshal(self):
         """Marshals the factoid block according to the byte-level representation shown at

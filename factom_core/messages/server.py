@@ -1,6 +1,8 @@
+from dataclasses import  dataclass
 from factom_core.messages import Message
 
 
+@dataclass
 class AddServer(Message):
     """
     Add the identity as a Federated or Audit server
@@ -8,14 +10,16 @@ class AddServer(Message):
 
     TYPE = 22
 
-    def __init__(self, timestamp: bytes, chain_id: bytes, is_federated: bool, public_key: bytes, signature: bytes):
+    timestamp: bytes
+    chain_id: bytes
+    is_federated: bool
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.chain_id = chain_id
-        self.is_federated = is_federated
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        self.is_p2p = True
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -59,6 +63,7 @@ class AddServer(Message):
         )
 
 
+@dataclass
 class ChangeServerKey(Message):
     """
     Change the key for the specified server identity
@@ -70,18 +75,18 @@ class ChangeServerKey(Message):
     CHANGE_TYPE_ADD_FED_SERVER_KEY = 0x08
     CHANGE_TYPE_ADD_BTC_ANCHOR_KEY = 0x09
 
-    def __init__(self, timestamp: bytes, chain_id: bytes, admin_block_change: int, key_type: int, priority: int,
-                 new_key: bytes, public_key: bytes, signature: bytes):
+    timestamp: bytes
+    chain_id: bytes
+    admin_block_change: int
+    key_type: int
+    priority: int
+    new_key: bytes
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.chain_id = chain_id
-        self.admin_block_change = admin_block_change
-        self.key_type = key_type
-        self.priority = priority
-        self.new_key = new_key
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
@@ -137,6 +142,7 @@ class ChangeServerKey(Message):
         )
 
 
+@dataclass
 class RemoveServer(Message):
     """
     Remove the identity as a Federated or Audit server
@@ -144,14 +150,16 @@ class RemoveServer(Message):
 
     TYPE = 24
 
-    def __init__(self, timestamp: bytes, chain_id: bytes, is_federated: bool, public_key: bytes, signature: bytes):
+    timestamp: bytes
+    chain_id: bytes
+    is_federated: bool
+    public_key: bytes
+    signature: bytes
+
+    def __post_init__(self):
         # TODO: type/value assertions
-        self.timestamp = timestamp
-        self.chain_id = chain_id
-        self.is_federated = is_federated
-        self.public_key = public_key
-        self.signature = signature
-        super().__init__()
+        self.is_p2p = True
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
