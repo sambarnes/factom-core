@@ -41,22 +41,22 @@ class Heartbeat(Message):
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.timestamp)
-        buf.extend(struct.pack('>I', self.secret_number))
-        buf.extend(struct.pack('>I', self.height))
+        buf.extend(struct.pack(">I", self.secret_number))
+        buf.extend(struct.pack(">I", self.height))
         buf.extend(self.chain_id)
         buf.extend(self.public_key)
         buf.extend(self.signature)
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         timestamp, data = data[:6], data[6:]
-        secret_number, data = struct.unpack('>I', data[:4])[0], data[4:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        secret_number, data = struct.unpack(">I", data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
         directory_block_hash, data = data[:32], data[32:]
         chain_id, data = data[:32], data[32:]
         public_key, data = data[:32], data[32:]

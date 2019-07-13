@@ -36,7 +36,7 @@ class MissingDataRequest(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -44,13 +44,10 @@ class MissingDataRequest(Message):
         timestamp, data = data[:6], data[6:]
         request_hash, data = data[:32], data[32:]
 
-        return MissingDataRequest(
-            timestamp=timestamp,
-            request_hash=request_hash,
-        )
+        return MissingDataRequest(timestamp=timestamp, request_hash=request_hash)
 
     def __str__(self):
-        return '{}(hash={})'.format(self.__class__.__name__, self.request_hash)
+        return "{}(hash={})".format(self.__class__.__name__, self.request_hash)
 
 
 @dataclass
@@ -58,6 +55,7 @@ class MissingDataResponse(Message):
     """
     A response to a MissingDataRequest, including the Entry or Entry Block requested.
     """
+
     TYPE = 18
 
     requested_object: object
@@ -84,7 +82,7 @@ class MissingDataResponse(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -97,12 +95,14 @@ class MissingDataResponse(Message):
         else:
             raise ValueError("Invalid object type ({})".format(object_type))
 
-        return MissingDataResponse(
-            requested_object=requested_object
-        )
+        return MissingDataResponse(requested_object=requested_object)
 
     def __str__(self):
         is_entry = isinstance(self.requested_object, Entry)
         object_type = "Entry" if is_entry else "Entry Block"
-        h = self.requested_object.entry_hash if is_entry else self.requested_object.keymr
-        return '{}(type={}, hash={})'.format(self.__class__.__name__, object_type, h)
+        h = (
+            self.requested_object.entry_hash
+            if is_entry
+            else self.requested_object.keymr
+        )
+        return "{}(type={}, hash={})".format(self.__class__.__name__, object_type, h)

@@ -51,8 +51,8 @@ class EndOfMinute(Message):
         buf.extend(self.timestamp)
         buf.extend(self.chain_id)
         buf.append(self.vm_index)
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(struct.pack('>I', self.system_height))
+        buf.extend(struct.pack(">I", self.height))
+        buf.extend(struct.pack(">I", self.system_height))
         buf.append(self.b)
         if self.b > 0:
             buf.extend(self.public_key)
@@ -60,7 +60,7 @@ class EndOfMinute(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -70,8 +70,8 @@ class EndOfMinute(Message):
         minute, data = data[0], data[1:]
         vm_index, data = data[0], data[1:]
         factoid_vm, data = data[0], data[1:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        system_height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        system_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         system_hash, data = data[:32], data[32:]
         b, data = data[0], data[1:]
         if b > 0:
@@ -141,9 +141,9 @@ class DirectoryBlockSignature(Message):
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.timestamp)
-        buf.extend(struct.pack('>I', self.system_height))
+        buf.extend(struct.pack(">I", self.system_height))
         buf.extend(self.system_hash)
-        buf.extend(struct.pack('>I', self.height))
+        buf.extend(struct.pack(">I", self.height))
         buf.append(self.vm_index)
         buf.extend(self.header.marshal())
         buf.extend(self.chain_id)
@@ -154,17 +154,20 @@ class DirectoryBlockSignature(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
 
         timestamp, data = data[:6], data[6:]
-        system_height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        system_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         system_hash, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
         vm_index, data = data[0], data[1:]
-        header_data, data = data[:DirectoryBlockHeader.LENGTH], data[DirectoryBlockHeader.LENGTH:]
+        header_data, data = (
+            data[: DirectoryBlockHeader.LENGTH],
+            data[DirectoryBlockHeader.LENGTH :],
+        )
         header, data = DirectoryBlockHeader.unmarshal(header_data)
         chain_id, data = data[:32], data[32:]
 

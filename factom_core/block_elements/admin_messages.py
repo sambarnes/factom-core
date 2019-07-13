@@ -25,7 +25,7 @@ class MinuteNumber(AdminMessage):
 
     def __post_init__(self):
         # TODO: value assertions
-        assert 1 <= self.minute <= 10, 'minute must be in range(1, 11)'
+        assert 1 <= self.minute <= 10, "minute must be in range(1, 11)"
 
     def marshal(self):
         """
@@ -47,7 +47,7 @@ class MinuteNumber(AdminMessage):
         :return: new MinuteNumber message object
         """
         minute, data = raw[0], raw[1:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return MinuteNumber(minute)
 
 
@@ -58,14 +58,18 @@ class DirectoryBlockSignature(AdminMessage):
     ADMIN_ID = 0x01
     MESSAGE_SIZE = 128
 
-    chain_id: bytes    # the servers 32 byte identity ChainID
+    chain_id: bytes  # the servers 32 byte identity ChainID
     public_key: bytes  # a 32 byte Ed25519 public key in that identity
-    signature: bytes   # a 64 byte signature of the previous Directory Block's header
+    signature: bytes  # a 64 byte signature of the previous Directory Block's header
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert len(self.public_key) == 32, 'public_key must be a bytes object of length 32'
-        assert len(self.signature) == 64, 'signature must be a bytes object of length 64'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert (
+            len(self.public_key) == 32
+        ), "public_key must be a bytes object of length 32"
+        assert (
+            len(self.signature) == 64
+        ), "signature must be a bytes object of length 64"
 
     def marshal(self):
         """
@@ -93,9 +97,9 @@ class DirectoryBlockSignature(AdminMessage):
         chain_id, data = raw[:32], raw[32:]
         public_key, data = data[:32], data[32:]
         signature, data = data[:64], data[64:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return DirectoryBlockSignature(chain_id, public_key, signature)
-    
+
 
 @dataclass
 class MatryoshkaHashReveal(AdminMessage):
@@ -108,8 +112,10 @@ class MatryoshkaHashReveal(AdminMessage):
     matryoshka_hash_reveal: bytes  # 32 bytes for the M-hash reveal itself
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert len(self.matryoshka_hash_reveal) == 32, 'matryoshka_hash_reveal must be a bytes object of length 32'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert (
+            len(self.matryoshka_hash_reveal) == 32
+        ), "matryoshka_hash_reveal must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -134,7 +140,7 @@ class MatryoshkaHashReveal(AdminMessage):
         """
         chain_id, data = raw[:32], raw[32:]
         matryoshka_hash_reveal, data = data[:32], data[32:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return MatryoshkaHashReveal(chain_id, matryoshka_hash_reveal)
 
 
@@ -145,6 +151,7 @@ class MatryoshkaHashAddOrReplace(AdminMessage):
     This data is replicated from the server's identity chain.
 
     """
+
     ADMIN_ID = 0x03
     MESSAGE_SIZE = 64
 
@@ -152,8 +159,10 @@ class MatryoshkaHashAddOrReplace(AdminMessage):
     new_matryoshka_hash: bytes  # 32 bytes for the new M-hash itself
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert len(self.new_matryoshka_hash) == 32, 'new_matryoshka_hash must be a bytes object of length 32'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert (
+            len(self.new_matryoshka_hash) == 32
+        ), "new_matryoshka_hash must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -178,9 +187,9 @@ class MatryoshkaHashAddOrReplace(AdminMessage):
         """
         chain_id, data = raw[:32], raw[32:]
         new_matryoshka_hash, data = data[:32], data[32:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return MatryoshkaHashAddOrReplace(chain_id, new_matryoshka_hash)
-    
+
 
 @dataclass
 class ServerCountIncrease(AdminMessage):
@@ -192,7 +201,7 @@ class ServerCountIncrease(AdminMessage):
     value: int  # the server count is incremented by this amount
 
     def __post_init__(self):
-        assert 0 <= self.value <= 255, 'value must be in range(0, 256)'
+        assert 0 <= self.value <= 255, "value must be in range(0, 256)"
 
     def marshal(self):
         """
@@ -214,7 +223,7 @@ class ServerCountIncrease(AdminMessage):
         :return: new ServerCountIncrease message object
         """
         value, data = raw[0], raw[1:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return ServerCountIncrease(value)
 
 
@@ -229,8 +238,8 @@ class AddFederatedServer(AdminMessage):
     activation_height: int  # the Directory Block height that it takes effect
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert self.activation_height >= 0, 'activation_height must not be negative'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert self.activation_height >= 0, "activation_height must not be negative"
 
     def marshal(self):
         """
@@ -242,7 +251,7 @@ class AddFederatedServer(AdminMessage):
         """
         buf = bytearray()
         buf.extend(self.chain_id)
-        buf.extend(struct.pack('>I', self.activation_height))
+        buf.extend(struct.pack(">I", self.activation_height))
         return bytes(buf)
 
     @classmethod
@@ -254,10 +263,10 @@ class AddFederatedServer(AdminMessage):
         :return: new AddFederatedServer message object
         """
         chain_id, data = raw[:32], raw[32:]
-        activation_height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        assert len(data) == 0, "Extra bytes remaining!"
         return AddAuditServer(chain_id, activation_height)
-    
+
 
 @dataclass
 class AddAuditServer(AdminMessage):
@@ -270,8 +279,8 @@ class AddAuditServer(AdminMessage):
     activation_height: int  # the Directory Block height that it takes effect
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert self.activation_height >= 0, 'activation_height must not be negative'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert self.activation_height >= 0, "activation_height must not be negative"
 
     def marshal(self):
         """
@@ -283,7 +292,7 @@ class AddAuditServer(AdminMessage):
         """
         buf = bytearray()
         buf.extend(self.chain_id)
-        buf.extend(struct.pack('>I', self.activation_height))
+        buf.extend(struct.pack(">I", self.activation_height))
         return bytes(buf)
 
     @classmethod
@@ -295,10 +304,10 @@ class AddAuditServer(AdminMessage):
         :return: new AddAuditServer message object
         """
         chain_id, data = raw[:32], raw[32:]
-        activation_height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        assert len(data) == 0, "Extra bytes remaining!"
         return AddAuditServer(chain_id, activation_height)
-    
+
 
 @dataclass
 class RemoveFederatedServer(AdminMessage):
@@ -314,8 +323,8 @@ class RemoveFederatedServer(AdminMessage):
     activation_height: int  # the Directory Block height that it takes effect
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert self.activation_height >= 0, 'activation_height must not be negative'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert self.activation_height >= 0, "activation_height must not be negative"
 
     def marshal(self):
         """
@@ -327,7 +336,7 @@ class RemoveFederatedServer(AdminMessage):
         """
         buf = bytearray()
         buf.extend(self.chain_id)
-        buf.extend(struct.pack('>I', self.activation_height))
+        buf.extend(struct.pack(">I", self.activation_height))
         return bytes(buf)
 
     @classmethod
@@ -339,10 +348,10 @@ class RemoveFederatedServer(AdminMessage):
         :return: new RemoveFederatedServer message object
         """
         chain_id, data = raw[:32], raw[32:]
-        activation_height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        assert len(data) == 0, "Extra bytes remaining!"
         return RemoveFederatedServer(chain_id, activation_height)
-    
+
 
 @dataclass
 class AddFederatedServerSigningKey(AdminMessage):
@@ -350,6 +359,7 @@ class AddFederatedServerSigningKey(AdminMessage):
     This adds an Ed25519 public key to the specified identity in the authority set.
     If the specified key for this server already exists, this replaces the old one.
     """
+
     ADMIN_ID = 0x08
     MESSAGE_SIZE = 69
 
@@ -359,10 +369,12 @@ class AddFederatedServerSigningKey(AdminMessage):
     activation_height: int  # the Directory Block height that it takes effect
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert 0 <= self.priority <= 255, 'priority must be in range(0, 256)'
-        assert len(self.new_public_key) == 32, 'new_public_key must be a bytes object of length 32'
-        assert self.activation_height >= 0, 'activation_height must not be negative'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert 0 <= self.priority <= 255, "priority must be in range(0, 256)"
+        assert (
+            len(self.new_public_key) == 32
+        ), "new_public_key must be a bytes object of length 32"
+        assert self.activation_height >= 0, "activation_height must not be negative"
 
     def marshal(self):
         """
@@ -378,7 +390,7 @@ class AddFederatedServerSigningKey(AdminMessage):
         buf.extend(self.chain_id)
         buf.append(self.priority)
         buf.extend(self.new_public_key)
-        buf.extend(struct.pack('>I', self.activation_height))
+        buf.extend(struct.pack(">I", self.activation_height))
         return bytes(buf)
 
     @classmethod
@@ -392,9 +404,11 @@ class AddFederatedServerSigningKey(AdminMessage):
         chain_id, data = raw[:32], raw[32:]
         priority, data = data[0], data[1:]
         new_public_key, data = data[:32], data[32:]
-        activation_height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        assert len(data) == 0, 'Extra bytes remaining!'
-        return AddFederatedServerSigningKey(chain_id, priority, new_public_key, activation_height)
+        activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        assert len(data) == 0, "Extra bytes remaining!"
+        return AddFederatedServerSigningKey(
+            chain_id, priority, new_public_key, activation_height
+        )
 
 
 @dataclass
@@ -413,10 +427,14 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
     public_key_hash: bytes
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert self.hash_type == 0 or self.hash_type == 1, 'hash_type must be 0 (p2pkh) or 1 (p2sh)'
-        assert 0 <= self.priority <= 255, 'priority must be in range(0, 256)'
-        assert len(self.public_key_hash) == 20, 'public_key_hash must be a bytes object of length 20'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert (
+            self.hash_type == 0 or self.hash_type == 1
+        ), "hash_type must be 0 (p2pkh) or 1 (p2sh)"
+        assert 0 <= self.priority <= 255, "priority must be in range(0, 256)"
+        assert (
+            len(self.public_key_hash) == 20
+        ), "public_key_hash must be a bytes object of length 20"
 
     def marshal(self):
         """
@@ -447,8 +465,10 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
         priority, data = data[0], data[1:]
         hash_type, data = data[0], data[1:]
         public_key_hash, data = data[:20], data[20:]
-        assert len(data) == 0, 'Extra bytes remaining!'
-        return AddFederatedServerBitcoinAnchorKey(chain_id, priority, hash_type, public_key_hash)
+        assert len(data) == 0, "Extra bytes remaining!"
+        return AddFederatedServerBitcoinAnchorKey(
+            chain_id, priority, hash_type, public_key_hash
+        )
 
 
 @dataclass
@@ -478,13 +498,16 @@ class CoinbaseDescriptor(AdminMessage):
 
     def __post_init__(self):
         for output in self.outputs:
-            assert "value" in output and "fct_address" in output, \
-                "Invalid output! Must contain a value and a fct_address"
+            assert (
+                "value" in output and "fct_address" in output
+            ), "Invalid output! Must contain a value and a fct_address"
             value, fct_address = output["value"], output["fct_address"]
-            assert isinstance(value, int) and value >=0, \
-                "Invalid output! `value` must be a positive integer"
-            assert isinstance(fct_address, bytes) and len(fct_address) == 32, \
-                'Invalid output! fct_address must be a bytes object of length 32'
+            assert (
+                isinstance(value, int) and value >= 0
+            ), "Invalid output! `value` must be a positive integer"
+            assert (
+                isinstance(fct_address, bytes) and len(fct_address) == 32
+            ), "Invalid output! fct_address must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -516,7 +539,7 @@ class CoinbaseDescriptor(AdminMessage):
         :return: new CoinbaseDescriptor message object
         """
         msg, data = CoinbaseDescriptor.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return msg
 
     @classmethod
@@ -533,12 +556,10 @@ class CoinbaseDescriptor(AdminMessage):
         while len(message_data) > 0:
             value, message_data = varint.decode(message_data)
             fct_address, message_data = message_data[:32], message_data[32:]
-            outputs.append({
-                "value": value,
-                "fct_address": fct_address
-            })
-        assert len(message_data) == 0, 'Extra bytes remaining in message data!'
+            outputs.append({"value": value, "fct_address": fct_address})
+        assert len(message_data) == 0, "Extra bytes remaining in message data!"
         return CoinbaseDescriptor(outputs), data
+
 
 @dataclass
 class CoinbaseDescriptorCancel(AdminMessage):
@@ -555,8 +576,8 @@ class CoinbaseDescriptorCancel(AdminMessage):
     descriptor_index: int  # this index into the specified descriptor will not be created
 
     def __post_init__(self):
-        assert self.descriptor_height >= 0, 'descriptor_height must not be negative'
-        assert self.descriptor_index >= 0, 'descriptor_index must not be negative'
+        assert self.descriptor_height >= 0, "descriptor_height must not be negative"
+        assert self.descriptor_index >= 0, "descriptor_index must not be negative"
 
     def marshal(self):
         """
@@ -584,7 +605,7 @@ class CoinbaseDescriptorCancel(AdminMessage):
         :return: new CoinbaseDescriptorCancel message object
         """
         msg, data = CoinbaseDescriptorCancel.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return msg
 
     @classmethod
@@ -599,9 +620,9 @@ class CoinbaseDescriptorCancel(AdminMessage):
         message_data, data = data[:message_size], data[message_size:]
         descriptor_height, message_data = varint.decode(message_data)
         descriptor_index, message_data = message_data[:32], message_data[32:]
-        assert len(message_data) == 0, 'Extra bytes remaining in message data!'
+        assert len(message_data) == 0, "Extra bytes remaining in message data!"
         return CoinbaseDescriptorCancel(descriptor_height, descriptor_index), data
-    
+
 
 @dataclass
 class AddAuthorityFactoidAddress(AdminMessage):
@@ -617,8 +638,10 @@ class AddAuthorityFactoidAddress(AdminMessage):
     fct_address: bytes
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert len(self.fct_address) == 32, 'fct_address must be a bytes object of length 32'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert (
+            len(self.fct_address) == 32
+        ), "fct_address must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -647,7 +670,7 @@ class AddAuthorityFactoidAddress(AdminMessage):
         chain_id, data = data[:32], data[32:]
         fct_address, data = data[:32], data[32:]
         return AddAuthorityFactoidAddress(chain_id, fct_address)
-    
+
 
 @dataclass
 class AddAuthorityEfficiency(AdminMessage):
@@ -663,8 +686,10 @@ class AddAuthorityEfficiency(AdminMessage):
     efficiency_percentage: int
 
     def __post_init__(self):
-        assert len(self.chain_id) == 32, 'chain_id must be a bytes object of length 32'
-        assert 0 <= self.efficiency_percentage <= 10000 , 'efficiency_percentage must be in range(0, 10000)'
+        assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
+        assert (
+            0 <= self.efficiency_percentage <= 10000
+        ), "efficiency_percentage must be in range(0, 10000)"
         # TODO: is this efficiency assertion right?
 
     def marshal(self):
@@ -678,7 +703,7 @@ class AddAuthorityEfficiency(AdminMessage):
         """
         buf = bytearray()
         buf.extend(self.chain_id)
-        buf.extend(struct.pack('>H', self.efficiency_percentage))
+        buf.extend(struct.pack(">H", self.efficiency_percentage))
         return bytes(buf)
 
     @classmethod
@@ -691,5 +716,5 @@ class AddAuthorityEfficiency(AdminMessage):
         """
         data = raw[1:]  # Skip message length, always 34
         chain_id, data = data[:32], data[32:]
-        efficiency_percentage, data = struct.unpack('>H', data[:4])[0], data[4:]
+        efficiency_percentage, data = struct.unpack(">H", data[:4])[0], data[4:]
         return AddAuthorityEfficiency(chain_id, efficiency_percentage)

@@ -60,12 +60,12 @@ class Ack(Message):
         buf.append(self.vm_index)
         buf.extend(self.timestamp)
         buf.extend(self.salt)
-        buf.extend(struct.pack('>I', self.salt_number))
+        buf.extend(struct.pack(">I", self.salt_number))
         buf.extend(self.message_hash)
         buf.extend(self.full_message_hash)
         buf.extend(self.leader_chain_id)
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(struct.pack('>I', self.process_list_height))
+        buf.extend(struct.pack(">I", self.height))
+        buf.extend(struct.pack(">I", self.process_list_height))
         buf.append(self.minute)
         buf.extend(self.serial_hash)
         buf.extend(varint.encode(len(self.data_area)))
@@ -75,7 +75,7 @@ class Ack(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -83,12 +83,12 @@ class Ack(Message):
         vm_index, data = data[0], data[1:]
         timestamp, data = data[:6], data[6:]
         salt, data = data[:8], data[8:]
-        salt_number, data = struct.unpack('>I', data[:4])[0], data[4:]
+        salt_number, data = struct.unpack(">I", data[:4])[0], data[4:]
         message_hash, data = data[:32], data[32:]
         full_message_hash, data = data[:32], data[32:]
         leader_chain_id, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        process_list_height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        process_list_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         minute, data = data[0], data[1:]
         serial_hash, data = data[:32], data[32:]
         data_area_size, data = varint.decode(data)

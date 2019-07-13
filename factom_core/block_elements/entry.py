@@ -24,7 +24,6 @@ class Entry:
         pass
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
 
-
     @property
     def entry_hash(self):
         """The entry hash in bytes. The algorithm used, along with the rationale behind its use, is shown at:
@@ -52,13 +51,13 @@ class Entry:
         buf.append(0x00)  # single byte version
         buf.extend(self.chain_id)
         external_ids_size = 0
-        ext_id_data = b''
+        ext_id_data = b""
         for external_id in self.external_ids:
             size = len(external_id)
             external_ids_size += size + 2
-            ext_id_data += struct.pack('>h', size)
+            ext_id_data += struct.pack(">h", size)
             ext_id_data += external_id
-        size = struct.pack('>h', external_ids_size)
+        size = struct.pack(">h", external_ids_size)
         buf.extend(size)
         buf.extend(ext_id_data)
         buf.extend(self.content)
@@ -74,21 +73,19 @@ class Entry:
         Entry created will not include contextual metadata, such as created_at, entry_block, directory_block, stage, and
         other information inferred from where the entry lies in its chain.
         """
-        data = raw[1:]  # skip single byte version, probably just gonna be 0x00 for a long time anyways
+        data = raw[
+            1:
+        ]  # skip single byte version, probably just gonna be 0x00 for a long time anyways
         chain_id, data = data[:32], data[32:]
-        external_ids_size, data = struct.unpack('>h', data[:2])[0], data[2:]
+        external_ids_size, data = struct.unpack(">h", data[:2])[0], data[2:]
         external_ids = []
         while external_ids_size > 0:
-            size, data = struct.unpack('>h', data[:2])[0], data[2:]
+            size, data = struct.unpack(">h", data[:2])[0], data[2:]
             external_id, data = data[:size], data[size:]
             external_ids.append(external_id)
             external_ids_size = external_ids_size - size - 2
         content = data  # Leftovers are the entry content
-        return Entry(
-            chain_id=chain_id,
-            external_ids=external_ids,
-            content=content
-        )
+        return Entry(chain_id=chain_id, external_ids=external_ids, content=content)
 
     def add_context(self, entry_block: EntryBlock):
         self.directory_block_keymr = entry_block.directory_block_keymr
@@ -102,23 +99,24 @@ class Entry:
                 break
         else:
             # Entry not found, raise an error
-            raise ValueError('provided EntryBlock does not contain this entry')
+            raise ValueError("provided EntryBlock does not contain this entry")
 
     def to_dict(self):
         return {
             # Required
-            'chain_id': self.chain_id,
-            'entry_hash': self.entry_hash,
-            'external_ids': self.external_ids,
-            'content': self.content,
+            "chain_id": self.chain_id,
+            "entry_hash": self.entry_hash,
+            "external_ids": self.external_ids,
+            "content": self.content,
             # Optional contextual
-            'directory_block_keymr': self.directory_block_keymr,
-            'entry_block_keymr': self.entry_block_keymr,
-            'height': self.height,
-            'timestamp': self.timestamp,
-            'stage': self.stage
+            "directory_block_keymr": self.directory_block_keymr,
+            "entry_block_keymr": self.entry_block_keymr,
+            "height": self.height,
+            "timestamp": self.timestamp,
+            "stage": self.stage,
         }
 
     def __str__(self):
-        return '{}(chain_id={}, entry_hash={})'.format(
-            self.__class__.__name__, self.chain_id.hex(), self.entry_hash.hex())
+        return "{}(chain_id={}, entry_hash={})".format(
+            self.__class__.__name__, self.chain_id.hex(), self.entry_hash.hex()
+        )

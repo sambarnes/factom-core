@@ -11,7 +11,9 @@ from factom_core.utils import varint
 @dataclass
 class EntryCreditBlockHeader:
 
-    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000c")
+    CHAIN_ID = bytes.fromhex(
+        "000000000000000000000000000000000000000000000000000000000000000c"
+    )
 
     body_hash: bytes
     prev_header_hash: bytes
@@ -31,17 +33,17 @@ class EntryCreditBlockHeader:
         buf.extend(self.body_hash)
         buf.extend(self.prev_header_hash)
         buf.extend(self.prev_full_hash)
-        buf.extend(struct.pack('>I', self.height))
+        buf.extend(struct.pack(">I", self.height))
         buf.extend(varint.encode(len(self.expansion_area)))
         buf.extend(self.expansion_area)
-        buf.extend(struct.pack('>Q', self.object_count))
-        buf.extend(struct.pack('>Q', self.body_size))
+        buf.extend(struct.pack(">Q", self.object_count))
+        buf.extend(struct.pack(">Q", self.body_size))
         return bytes(buf)
 
     @classmethod
     def unmarshal(cls, raw: bytes):
         h, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return h
 
     @classmethod
@@ -51,23 +53,29 @@ class EntryCreditBlockHeader:
         body_hash, data = data[:32], data[32:]
         prev_header_hash, data = data[:32], data[32:]
         prev_full_hash, data = data[:32], data[32:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
 
         header_expansion_size, data = varint.decode(data)
-        header_expansion_area, data = data[:header_expansion_size], data[header_expansion_size:]
+        header_expansion_area, data = (
+            data[:header_expansion_size],
+            data[header_expansion_size:],
+        )
 
-        object_count, data = struct.unpack('>Q', data[:8])[0], data[8:]
-        body_size, data = struct.unpack('>Q', data[:8])[0], data[8:]
+        object_count, data = struct.unpack(">Q", data[:8])[0], data[8:]
+        body_size, data = struct.unpack(">Q", data[:8])[0], data[8:]
 
-        return EntryCreditBlockHeader(
-            body_hash=body_hash,
-            prev_header_hash=prev_header_hash,
-            prev_full_hash=prev_full_hash,
-            height=height,
-            expansion_area=header_expansion_area,
-            object_count=object_count,
-            body_size=body_size
-        ), data
+        return (
+            EntryCreditBlockHeader(
+                body_hash=body_hash,
+                prev_header_hash=prev_header_hash,
+                prev_full_hash=prev_full_hash,
+                height=height,
+                expansion_area=header_expansion_area,
+                object_count=object_count,
+                body_size=body_size,
+            ),
+            data,
+        )
 
 
 @dataclass
@@ -129,7 +137,7 @@ class EntryCreditBlock:
         next entry-credit block.
         """
         block, data = cls.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return block
 
     @classmethod
@@ -148,11 +156,17 @@ class EntryCreditBlock:
                 objects[minute] = current_minute_objects
                 current_minute_objects = []
             elif ecid == ChainCommit.ECID:
-                chain_commit, data = data[:ChainCommit.BITLENGTH], data[ChainCommit.BITLENGTH:]
+                chain_commit, data = (
+                    data[: ChainCommit.BITLENGTH],
+                    data[ChainCommit.BITLENGTH :],
+                )
                 chain_commit = ChainCommit.unmarshal(chain_commit)
                 current_minute_objects.append(chain_commit)
             elif ecid == EntryCommit.ECID:
-                entry_commit, data = data[:EntryCommit.BITLENGTH], data[EntryCommit.BITLENGTH:]
+                entry_commit, data = (
+                    data[: EntryCommit.BITLENGTH],
+                    data[EntryCommit.BITLENGTH :],
+                )
                 entry_commit = EntryCommit.unmarshal(entry_commit)
                 current_minute_objects.append(entry_commit)
             elif ecid == BalanceIncrease.ECID:
@@ -161,10 +175,7 @@ class EntryCreditBlock:
             else:
                 raise ValueError
 
-        return EntryCreditBlock(
-            header=header,
-            objects=objects
-        ), data
+        return EntryCreditBlock(header=header, objects=objects), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass
@@ -173,4 +184,4 @@ class EntryCreditBlock:
         pass
 
     def __str__(self):
-        return '{}(height={})'.format(self.__class__.__name__, self.header.height)
+        return "{}(height={})".format(self.__class__.__name__, self.header.height)

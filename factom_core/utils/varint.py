@@ -18,7 +18,7 @@ def encode(number: int):
         if b != 0 or start:
             start = True
             b = b | 0x80 if i != 8 else b & 0x7F
-            b = b if b < 256 else struct.pack('>Q', b)[-1]
+            b = b if b < 256 else struct.pack(">Q", b)[-1]
             buf.append(b)
 
         h = h << 7
@@ -33,9 +33,8 @@ def decode(raw: bytes):
     while True:
         i, data = ord(data[:1]), data[1:]
         result = result << 7
-        result += i & 0x7f
+        result += i & 0x7F
         if i < 0x80:
             break
 
     return result, data
-

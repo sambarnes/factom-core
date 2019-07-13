@@ -18,7 +18,11 @@ class FactoidTransaction:
 
     def is_coinbase(self):
         # TODO: Coinbase outputs be zero too right? Just matters that everything else is definitely zero
-        return len(self.inputs) == 0 and len(self.ec_purchases) == 0 and len(self.rcds) == 0
+        return (
+            len(self.inputs) == 0
+            and len(self.ec_purchases) == 0
+            and len(self.rcds) == 0
+        )
 
     @property
     def hash(self):
@@ -28,7 +32,7 @@ class FactoidTransaction:
         """Marshals the FactoidTransaction according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
         """
-        data = b'\x02'
+        data = b"\x02"
         data += self.timestamp
         data += bytes([len(self.inputs)])
         data += bytes([len(self.outputs)])
@@ -48,7 +52,7 @@ class FactoidTransaction:
         for rcd in self.rcds:
             fct_public_key = rcd.get("fct_public_key")
             signature = rcd.get("signature")
-            data += b'\x01' + fct_public_key + signature
+            data += b"\x01" + fct_public_key + signature
         return data
 
     @classmethod
@@ -57,7 +61,7 @@ class FactoidTransaction:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
         """
         obj, data = FactoidTransaction.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return obj
 
     @classmethod
@@ -79,51 +83,47 @@ class FactoidTransaction:
         for i in range(input_count):
             value, data = varint.decode(data)
             fct_address, data = data[:32], data[32:]
-            inputs.append({
-                "value": value,
-                "fct_address": fct_address
-            })
+            inputs.append({"value": value, "fct_address": fct_address})
 
         outputs = []
         for i in range(output_count):
             value, data = varint.decode(data)
             fct_address, data = data[:32], data[32:]
-            outputs.append({
-                "value": value,
-                "fct_address": fct_address
-            })
+            outputs.append({"value": value, "fct_address": fct_address})
 
         ec_purchases = []
         for i in range(ec_purchase_count):
             value, data = varint.decode(data)
             ec_public_key, data = data[:32], data[32:]
-            ec_purchases.append({
-                "value": value,
-                "ec_public_key": ec_public_key
-            })
+            ec_purchases.append({"value": value, "ec_public_key": ec_public_key})
 
         rcds = []
         for i in range(input_count):
             data = data[1:]  # skip 1 byte version number, always 0x01 for now
             fct_public_key, data = data[:32], data[32:]
             signature, data = data[:64], data[64:]
-            rcds.append({
-                "fct_public_key": fct_public_key,
-                "signature": signature
-            })
+            rcds.append({"fct_public_key": fct_public_key, "signature": signature})
 
-        return FactoidTransaction(
-            timestamp=timestamp,
-            inputs=inputs,
-            outputs=outputs,
-            ec_purchases=ec_purchases,
-            rcds=rcds
-        ), data
+        return (
+            FactoidTransaction(
+                timestamp=timestamp,
+                inputs=inputs,
+                outputs=outputs,
+                ec_purchases=ec_purchases,
+                rcds=rcds,
+            ),
+            data,
+        )
 
     def to_dict(self):
         pass  # TODO: Implement FactoidTransaction.to_dict()
 
     def __str__(self):
         # TODO: convert timestamp to readable
-        return '{}(timestamp={}, inputs={}, outputs={}, ec_purchases={})'.format(
-            self.__class__.__name__, self.timestamp, len(self.inputs), len(self.outputs), len(self.ec_purchases))
+        return "{}(timestamp={}, inputs={}, outputs={}, ec_purchases={})".format(
+            self.__class__.__name__,
+            self.timestamp,
+            len(self.inputs),
+            len(self.outputs),
+            len(self.ec_purchases),
+        )

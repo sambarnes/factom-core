@@ -2,6 +2,7 @@ import struct
 from dataclasses import dataclass
 from factom_core.messages import Message
 
+
 @dataclass
 class MissingMessageRequest(Message):
     """
@@ -41,15 +42,15 @@ class MissingMessageRequest(Message):
         buf.extend(self.timestamp)
         buf.extend(self.asking)
         buf.append(self.vm_index)
-        buf.extend(struct.pack('>I', self.height))
-        buf.extend(struct.pack('>I', self.system_height))
-        buf.extend(struct.pack('>I', len(self.process_list_heights)))
+        buf.extend(struct.pack(">I", self.height))
+        buf.extend(struct.pack(">I", self.system_height))
+        buf.extend(struct.pack(">I", len(self.process_list_heights)))
         for h in self.process_list_heights:
-            buf.extend(struct.pack('>I', h))
+            buf.extend(struct.pack(">I", h))
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -57,12 +58,12 @@ class MissingMessageRequest(Message):
         timestamp, data = data[:6], data[6:]
         asking, data = data[:32], data[32:]
         vm_index, data = data[0], data[1:]
-        height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        system_height, data = struct.unpack('>I', data[:4])[0], data[4:]
-        process_list_heights_count, data = struct.unpack('>I', data[:4])[0], data[4:]
+        height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        system_height, data = struct.unpack(">I", data[:4])[0], data[4:]
+        process_list_heights_count, data = struct.unpack(">I", data[:4])[0], data[4:]
         process_list_heights = []
         for _ in range(process_list_heights_count):
-            h, data = struct.unpack('>I', data[:4])[0], data[4:]
+            h, data = struct.unpack(">I", data[:4])[0], data[4:]
             process_list_heights.append(h)
 
         return MissingMessageRequest(
@@ -75,7 +76,7 @@ class MissingMessageRequest(Message):
         )
 
     def __str__(self):
-        return '{}(hash={})'.format(self.__class__.__name__, self.asking)
+        return "{}(hash={})".format(self.__class__.__name__, self.asking)
 
 
 @dataclass
@@ -108,7 +109,7 @@ class MissingMessageResponse(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -117,6 +118,4 @@ class MissingMessageResponse(Message):
         b, data = data[0], data[1:]
         # TODO: figure out the rest of this MissingMessageResponse
 
-        return MissingMessageResponse(
-            timestamp=timestamp,
-        )
+        return MissingMessageResponse(timestamp=timestamp)

@@ -1,4 +1,4 @@
-from dataclasses import  dataclass
+from dataclasses import dataclass
 from factom_core.messages import Message
 
 
@@ -43,7 +43,7 @@ class AddServer(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -53,7 +53,7 @@ class AddServer(Message):
         server_type, data = data[0], data[1:]
         public_key, data = data[:32], data[32:]
         signature, data = data[:64], data[64:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return AddServer(
             timestamp=timestamp,
             chain_id=chain_id,
@@ -116,7 +116,7 @@ class ChangeServerKey(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -129,7 +129,7 @@ class ChangeServerKey(Message):
         new_key, data = data[:32], data[32:]
         public_key, data = data[:32], data[32:]
         signature, data = data[:64], data[64:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return ChangeServerKey(
             timestamp=timestamp,
             chain_id=chain_id,
@@ -183,7 +183,7 @@ class RemoveServer(Message):
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw:  bytes):
+    def unmarshal(cls, raw: bytes):
         msg_type, data = raw[0], raw[1:]
         if msg_type != cls.TYPE:
             raise ValueError("Invalid message type ({})".format(msg_type))
@@ -193,7 +193,7 @@ class RemoveServer(Message):
         server_type, data = data[0], data[1:]
         public_key, data = data[:32], data[32:]
         signature, data = data[:64], data[64:]
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return RemoveServer(
             timestamp=timestamp,
             chain_id=chain_id,
