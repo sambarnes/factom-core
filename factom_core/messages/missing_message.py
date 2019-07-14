@@ -75,9 +75,6 @@ class MissingMessageRequest(Message):
             process_list_heights=process_list_heights,
         )
 
-    def __str__(self):
-        return "{}(hash={})".format(self.__class__.__name__, self.asking)
-
 
 @dataclass
 class MissingMessageResponse(Message):
@@ -119,3 +116,4 @@ class MissingMessageResponse(Message):
         # TODO: figure out the rest of this MissingMessageResponse
 
         return MissingMessageResponse(timestamp=timestamp)
+
