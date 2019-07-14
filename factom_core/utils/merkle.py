@@ -2,7 +2,8 @@ from hashlib import sha256
 
 
 def get_merkle_root(hashes: list) -> bytes:
-    return build_merkle_tree(hashes)[-1]
+    merkle_tree = build_merkle_tree(hashes)
+    return None if len(merkle_tree) == 0 else merkle_tree[-1]
 
 
 def build_merkle_tree(hashes: list):

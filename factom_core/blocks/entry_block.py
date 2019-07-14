@@ -61,13 +61,13 @@ class EntryBlock:
     _cached_keymr: bytes = None
     _cached_body_mr: bytes = None
 
-    def __post_init__(self, **kwargs):
+    def __post_init__(self):
         # TODO: assert they're all here
-
+        pass
         # Optional contextual metadata. Derived from the directory block that contains this EntryBlock
-        self.directory_block_keymr = kwargs.get("directory_block_keymr")
-        self.timestamp = kwargs.get("timestamp")
-        self.next_keymr = kwargs.get("next_keymr")
+        # self.directory_block_keymr = kwargs.get("directory_block_keymr")
+        # self.timestamp = kwargs.get("timestamp")
+        # self.next_keymr = kwargs.get("next_keymr")
 
     @property
     def body_mr(self):
@@ -135,9 +135,8 @@ class EntryBlock:
         current_minute_entries = []
         for i in range(header.entry_count):
             entry_hash, data = data[:32], data[32:]
-            minute_marker = int(entry_hash.hex(), 16)
-            if minute_marker <= 10:
-                entry_hashes[minute_marker] = current_minute_entries
+            if entry_hash[:-1] == bytes(31) and entry_hash[-1] <= 10:
+                entry_hashes[entry_hash[-1]] = current_minute_entries
                 current_minute_entries = []
             else:
                 current_minute_entries.append(entry_hash)

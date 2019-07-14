@@ -1,5 +1,5 @@
+import factom_core.messages as messages
 from dataclasses import dataclass
-
 
 @dataclass
 class Message:
@@ -47,3 +47,63 @@ class Message:
     @classmethod
     def unmarshal(cls, raw: bytes):
         pass
+
+
+def unmarshal_message(raw: bytes):
+    msg_type = raw[0]
+    if msg_type == messages.Ack.TYPE:
+        return messages.Ack.unmarshal(raw)
+
+    elif msg_type == messages.ChainCommit.TYPE:
+        return messages.ChainCommit.unmarshal(raw)
+
+    elif msg_type == messages.EntryCommit.TYPE:
+        return messages.EntryCommit.unmarshal(raw)
+
+    elif msg_type == messages.EntryReveal.TYPE:
+        return messages.EntryReveal.unmarshal(raw)
+
+    elif msg_type == messages.FactoidTransaction.TYPE:
+        return messages.FactoidTransaction.unmarshal(raw)
+
+    elif msg_type == messages.EndOfMinute.TYPE:
+        return messages.EndOfMinute.unmarshal(raw)
+
+    elif msg_type == messages.DirectoryBlockSignature.TYPE:
+        return messages.DirectoryBlockSignature.unmarshal(raw)
+
+    elif msg_type == messages.DirectoryBlockStateRequest.TYPE:
+        return messages.DirectoryBlockStateRequest.unmarshal(raw)
+
+    elif msg_type == messages.DirectoryBlockState.TYPE:
+        return messages.DirectoryBlockState.unmarshal(raw)
+
+    elif msg_type == messages.MissingDataRequest.TYPE:
+        return messages.MissingDataRequest.unmarshal(raw)
+
+    elif msg_type == messages.MissingDataResponse.TYPE:
+        return messages.MissingDataResponse.unmarshal(raw)
+
+    elif msg_type == messages.Heartbeat.TYPE:
+        return messages.Heartbeat.unmarshal(raw)
+
+    elif msg_type == messages.AddServer.TYPE:
+        return messages.AddServer.unmarshal(raw)
+
+    elif msg_type == messages.ChangeServerKey.TYPE:
+        return messages.ChangeServerKey.unmarshal(raw)
+
+    elif msg_type == messages.RemoveServer.TYPE:
+        return messages.RemoveServer.unmarshal(raw)
+
+    elif msg_type == messages.BlockRequest.TYPE:
+        return messages.BlockRequest.unmarshal(raw)
+
+    elif msg_type == messages.MissingMessageRequest.TYPE:
+        return messages.MissingMessageRequest.unmarshal(raw)
+
+    elif msg_type == messages.MissingMessageResponse.TYPE:
+        return messages.MissingMessageResponse.unmarshal(raw)
+
+    else:
+        raise ValueError("Bad message type")

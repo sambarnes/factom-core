@@ -132,9 +132,6 @@ class DirectoryBlockState(Message):
             signatures=signatures,
         )
 
-    def __str__(self):
-        return "{}()".format(self.__class__.__name__)
-
 
 @dataclass
 class DirectoryBlockStateRequest(Message):
@@ -185,10 +182,6 @@ class DirectoryBlockStateRequest(Message):
             block_height_start=block_height_start,
             block_height_end=block_height_end,
         )
-
-    def __str__(self):
-
-        return "{}()".format(self.__class__.__name__)
 
 
 @dataclass()

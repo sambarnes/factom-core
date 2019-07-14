@@ -168,7 +168,7 @@ class DirectoryBlockSignature(Message):
             data[: DirectoryBlockHeader.LENGTH],
             data[DirectoryBlockHeader.LENGTH :],
         )
-        header, data = DirectoryBlockHeader.unmarshal(header_data)
+        header = DirectoryBlockHeader.unmarshal(header_data)
         chain_id, data = data[:32], data[32:]
 
         header_signature_public_key, data = data[:32], data[32:]
