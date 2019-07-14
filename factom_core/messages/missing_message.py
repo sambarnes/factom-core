@@ -116,4 +116,3 @@ class MissingMessageResponse(Message):
         # TODO: figure out the rest of this MissingMessageResponse
 
         return MissingMessageResponse(timestamp=timestamp)
-

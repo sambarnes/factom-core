@@ -109,6 +109,7 @@ class Peer:
 
         # TODO: gob encoder and decoder... https://github.com/mgeisler/pygob
         # TODO: send out the handshake and get the response
+        return False
 
     def stop(self) -> None:
         """
@@ -156,16 +157,16 @@ class Peer:
             # TODO: check if peer type is special, and if so, set it to "special_config"
             metrics = PeerMetrics(
                 peer_hash=self.peer_hash,
-                peer_address=self.peer_address,
-                moment_connected=self.moment_connected,
-                peer_quality=self.peer_quality,
+                peer_address=self.ip,
+                moment_connected=self.time_connected,
+                peer_quality=self.quality_score,
                 last_receive=self.last_receive,
                 last_send=self.last_send,
-                messages_sent=self.messages_sent,
+                messages_sent=self.parcels_sent,
                 bytes_sent=self.bytes_sent,
-                messages_received=self.messages_received,
+                messages_received=self.parcels_received,
                 bytes_received=self.bytes_received,
-                incoming=self.incoming,
+                incoming=self.is_incoming,
                 peer_type=peer_type,
                 connection_state="v{}".format(self.protocol.version),
             )
