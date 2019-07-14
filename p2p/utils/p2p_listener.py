@@ -2,7 +2,31 @@ import base64
 import bottle
 import factom_core.messages
 
-# A quick and hacky tool to run and listen for p2p messages forwarded from a factomd node
+"""
+A quick and hacky tool to listen for p2p messages forwarded from a factomd node
+
+Place the following snippet at this line of Who's p2p package: https://github.com/WhoSoup/factom-p2p/blob/master/peer.go#L243
+
+
+if msg.IsApplicationMessage() {
+    go func() {
+        forwardedMessageBody, _ := json.Marshal(map[string]string{
+            "payload": base64.StdEncoding.EncodeToString(msg.Payload),
+        })
+        resp, _ := http.Post("http://localhost:8000", "application/json", bytes.NewBuffer(forwardedMessageBody))
+        if err != nil {
+            // handle error
+        }
+        time.Sleep(time.Millisecond * 50)
+        if resp != nil {
+            _ = resp.Body.Close()
+        }
+    }()
+}
+
+
+Then rebuild and run his branch: https://github.com/WhoSoup/factomd/tree/FACTOMIZE_new_p2p
+"""
 
 
 @bottle.hook('before_request')
