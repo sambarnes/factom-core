@@ -30,7 +30,7 @@ class Ack(Message):
     def __post_init__(self):
         # TODO: type/value assertions
         self.is_p2p = True
-        super().__init__()
+        super().__post_init__()
 
     def marshal(self) -> bytes:
         """
