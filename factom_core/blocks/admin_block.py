@@ -205,7 +205,14 @@ class AdminBlock:
         pass
 
     def to_dict(self):
-        pass
+        return {
+            "back_reference_hash": self.header.back_reference_hash.hex(),
+            "height": self.header.height,
+            "expansion_area": self.header.expansion_area.hex(),
+            "message_count": self.header.message_count,
+            "body_size": self.header.body_size,
+            "messages": [m.to_dict() for m in self.messages],
+        }
 
     def __str__(self):
         return "{}(height={}, hash={})".format(

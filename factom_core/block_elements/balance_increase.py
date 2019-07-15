@@ -56,7 +56,12 @@ class BalanceIncrease:
         )
 
     def to_dict(self):
-        pass  # TODO: Implement BalanceIncrease.to_dict()
+        return {
+            "ec_public_key": self.ec_public_key.hex(),
+            "tx_id": self.tx_id.hex(),
+            "index": self.index,
+            "quantity": self.quantity,
+        }
 
     def __str__(self):
         # TODO: convert EC Public Key to its base58 address

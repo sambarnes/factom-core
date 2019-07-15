@@ -49,6 +49,9 @@ class Message:
     def unmarshal(cls, raw: bytes):
         pass
 
+    def to_dict(self) -> dict:
+        return {}
+
 
 def unmarshal_message(raw: bytes):
     msg_type = raw[0]

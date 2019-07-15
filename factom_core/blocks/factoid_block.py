@@ -179,7 +179,21 @@ class FactoidBlock:
         pass
 
     def to_dict(self):
-        pass
+        return {
+            "body_mr": self.header.body_mr.hex(),
+            "prev_keymr": self.header.prev_keymr.hex(),
+            "prev_ledger_keymr": self.header.prev_ledger_keymr.hex(),
+            "ec_exchange_rate": self.header.ec_exchange_rate,
+            "height": self.header.height,
+            "expansion_area": self.header.expansion_area.hex(),
+            "transaction_count": self.header.transaction_count,
+            "body_size": self.header.body_size,
+            "transactions": {
+                minute: tx.to_dict()
+                for minute, txs in self.transactions.items()
+                for tx in txs
+            },
+        }
 
     def __str__(self):
         return "{}(height={}, keymr={})".format(

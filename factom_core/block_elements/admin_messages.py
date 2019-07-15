@@ -13,6 +13,9 @@ class AdminMessage:
     def unmarshal(cls, raw: bytes):
         raise NotImplementedError("Must be implemented by subclasses")
 
+    def to_dict(self):
+        raise NotImplementedError("Must be implemented by subclasses")
+
 
 @dataclass
 class MinuteNumber(AdminMessage):
@@ -49,6 +52,9 @@ class MinuteNumber(AdminMessage):
         minute, data = raw[0], raw[1:]
         assert len(data) == 0, "Extra bytes remaining!"
         return MinuteNumber(minute)
+
+    def to_dict(self):
+        return {"minute": self.minute}
 
 
 @dataclass
@@ -100,6 +106,13 @@ class DirectoryBlockSignature(AdminMessage):
         assert len(data) == 0, "Extra bytes remaining!"
         return DirectoryBlockSignature(chain_id, public_key, signature)
 
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
+
 
 @dataclass
 class MatryoshkaHashReveal(AdminMessage):
@@ -142,6 +155,12 @@ class MatryoshkaHashReveal(AdminMessage):
         matryoshka_hash_reveal, data = data[:32], data[32:]
         assert len(data) == 0, "Extra bytes remaining!"
         return MatryoshkaHashReveal(chain_id, matryoshka_hash_reveal)
+
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "matryoshka_hash_reveal": self.matryoshka_hash_reveal.hex(),
+        }
 
 
 @dataclass
@@ -190,6 +209,12 @@ class MatryoshkaHashAddOrReplace(AdminMessage):
         assert len(data) == 0, "Extra bytes remaining!"
         return MatryoshkaHashAddOrReplace(chain_id, new_matryoshka_hash)
 
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "new_matryoshka_hash": self.new_matryoshka_hash.hex(),
+        }
+
 
 @dataclass
 class ServerCountIncrease(AdminMessage):
@@ -225,6 +250,9 @@ class ServerCountIncrease(AdminMessage):
         value, data = raw[0], raw[1:]
         assert len(data) == 0, "Extra bytes remaining!"
         return ServerCountIncrease(value)
+
+    def to_dict(self):
+        return {"value": self.value}
 
 
 @dataclass
@@ -267,6 +295,12 @@ class AddFederatedServer(AdminMessage):
         assert len(data) == 0, "Extra bytes remaining!"
         return AddAuditServer(chain_id, activation_height)
 
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "activation_height": self.activation_height,
+        }
+
 
 @dataclass
 class AddAuditServer(AdminMessage):
@@ -307,6 +341,12 @@ class AddAuditServer(AdminMessage):
         activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         assert len(data) == 0, "Extra bytes remaining!"
         return AddAuditServer(chain_id, activation_height)
+
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "activation_height": self.activation_height,
+        }
 
 
 @dataclass
@@ -351,6 +391,12 @@ class RemoveFederatedServer(AdminMessage):
         activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         assert len(data) == 0, "Extra bytes remaining!"
         return RemoveFederatedServer(chain_id, activation_height)
+
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "activation_height": self.activation_height,
+        }
 
 
 @dataclass
@@ -409,6 +455,14 @@ class AddFederatedServerSigningKey(AdminMessage):
         return AddFederatedServerSigningKey(
             chain_id, priority, new_public_key, activation_height
         )
+
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "priority": self.priority,
+            "new_public_key": self.new_public_key,
+            "activation_height": self.activation_height,
+        }
 
 
 @dataclass
@@ -469,6 +523,14 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
         return AddFederatedServerBitcoinAnchorKey(
             chain_id, priority, hash_type, public_key_hash
         )
+
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "priority": self.priority,
+            "hash_type": self.hash_type,
+            "public_key_hash": self.public_key_hash,
+        }
 
 
 @dataclass
@@ -560,6 +622,9 @@ class CoinbaseDescriptor(AdminMessage):
         assert len(message_data) == 0, "Extra bytes remaining in message data!"
         return CoinbaseDescriptor(outputs), data
 
+    def to_dict(self):
+        return {}  # TODO: CoinbaseDescriptor to_dict
+
 
 @dataclass
 class CoinbaseDescriptorCancel(AdminMessage):
@@ -623,6 +688,9 @@ class CoinbaseDescriptorCancel(AdminMessage):
         assert len(message_data) == 0, "Extra bytes remaining in message data!"
         return CoinbaseDescriptorCancel(descriptor_height, descriptor_index), data
 
+    def to_dict(self):
+        return {}  # TODO: CoinbaseDescriptorCancel to_dict
+
 
 @dataclass
 class AddAuthorityFactoidAddress(AdminMessage):
@@ -671,6 +739,9 @@ class AddAuthorityFactoidAddress(AdminMessage):
         fct_address, data = data[:32], data[32:]
         return AddAuthorityFactoidAddress(chain_id, fct_address)
 
+    def to_dict(self):
+        return {"chain_id": self.chain_id.hex(), "fct_address": self.fct_address}
+
 
 @dataclass
 class AddAuthorityEfficiency(AdminMessage):
@@ -718,3 +789,9 @@ class AddAuthorityEfficiency(AdminMessage):
         chain_id, data = data[:32], data[32:]
         efficiency_percentage, data = struct.unpack(">H", data[:4])[0], data[4:]
         return AddAuthorityEfficiency(chain_id, efficiency_percentage)
+
+    def to_dict(self):
+        return {
+            "chain_id": self.chain_id.hex(),
+            "efficiency": self.efficiency_percentage,
+        }

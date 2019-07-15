@@ -94,6 +94,21 @@ class EndOfMinute(Message):
             signature=signature,
         )
 
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "chain_id": self.chain_id.hex(),
+            "minute": self.minute,
+            "vm_index": self.vm_index,
+            "factoid_vm": self.factoid_vm,
+            "height": self.height,
+            "system_height": self.system_height,
+            "system_hash": self.system_hash.hex(),
+            "b": self.b,
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
+
 
 @dataclass
 class DirectoryBlockSignature(Message):
@@ -190,3 +205,18 @@ class DirectoryBlockSignature(Message):
             public_key=public_key,
             signature=signature,
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "system_height": self.system_height,
+            "system_hash": self.system_hash.hex(),
+            "height": self.height,
+            "vm_index": self.vm_index,
+            "header": self.header.__str__(),  # TODO: header to_dict() functions
+            "chain_id": self.chain_id.hex(),
+            "header_signature_public_key": self.header_signature_public_key.hex(),
+            "header_signature": self.header_signature.hex(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }

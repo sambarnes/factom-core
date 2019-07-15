@@ -75,6 +75,16 @@ class MissingMessageRequest(Message):
             process_list_heights=process_list_heights,
         )
 
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "asking": self.asking.hex(),
+            "vm_index": self.vm_index,
+            "height": self.height,
+            "system_height": self.system_height,
+            "process_list_heights": [v for v in self.process_list_heights],
+        }
+
 
 @dataclass
 class MissingMessageResponse(Message):

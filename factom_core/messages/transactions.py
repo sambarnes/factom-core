@@ -38,6 +38,9 @@ class FactoidTransaction(Message):
         tx = block_elements.FactoidTransaction.unmarshal(data)
         return FactoidTransaction(tx=tx)
 
+    def to_dict(self) -> dict:
+        return {"tx": self.tx.to_dict()}
+
 
 @dataclass
 class ChainCommit(Message):
@@ -93,6 +96,13 @@ class ChainCommit(Message):
             signature, public_key = b"", b""
 
         return ChainCommit(commit=commit, public_key=public_key, signature=signature)
+
+    def to_dict(self) -> dict:
+        return {
+            "commit": self.commit.to_dict(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
 
 
 @dataclass
@@ -150,6 +160,13 @@ class EntryCommit(Message):
 
         return EntryCommit(commit=commit, public_key=public_key, signature=signature)
 
+    def to_dict(self) -> dict:
+        return {
+            "commit": self.commit.to_dict(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
+
 
 @dataclass
 class EntryReveal(Message):
@@ -190,3 +207,6 @@ class EntryReveal(Message):
         timestamp, data = data[:6], data[6:]
         entry = block_elements.Entry.unmarshal(data)
         return EntryReveal(timestamp=timestamp, entry=entry)
+
+    def to_dict(self) -> dict:
+        return {"timestamp": self.timestamp.hex(), "entry": self.entry.to_dict()}

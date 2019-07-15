@@ -29,32 +29,38 @@ Then rebuild and run his branch: https://github.com/WhoSoup/factomd/tree/FACTOMI
 """
 
 
-@bottle.hook('before_request')
+bottle.BaseRequest.MEMFILE_MAX = 1024 * 1024
+app = bottle.default_app()
+
+
+@bottle.hook("before_request")
 def strip_path():
     """Strip trailing '/' on all requests. '/foo' and /foo/' are two unique endpoints in bottle"""
-    bottle.request.environ['PATH_INFO'] = bottle.request.environ['PATH_INFO'].rstrip('/')
+    bottle.request.environ["PATH_INFO"] = bottle.request.environ["PATH_INFO"].rstrip(
+        "/"
+    )
 
 
-@bottle.get('/health')
+@bottle.get("/health")
 def health_check():
-    return {'data': 'Healthy!'}
+    return {"data": "Healthy!"}
 
 
-bottle.BaseRequest.MEMFILE_MAX = 1024 * 1024
-
-
-@bottle.post('/')
+@bottle.post("/")
 def receive():
     """Receive a forwarded p2p message"""
     req = bottle.request
-    payload = base64.b64decode(req.json.get('payload').encode())
+    payload = base64.b64decode(req.json.get("payload").encode())
     msg = factom_core.messages.unmarshal_message(raw=payload)
-    print(msg)
+    print(msg.__class__.__name__)
+    print(msg.to_dict())
     return
 
 
-# Entry point ONLY when run locally. The docker setup uses gunicorn and this block will not be executed.
-if __name__ == '__main__':
-    bottle.run(host='localhost', port=8000)
+def run():
+    print("Starting Hacky P2P Server...")
+    bottle.run(host="localhost", port=8001)
 
-app = bottle.default_app()
+
+if __name__ == "__main__":
+    run()

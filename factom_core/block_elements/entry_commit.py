@@ -56,7 +56,13 @@ class EntryCommit:
         )
 
     def to_dict(self):
-        pass  # TODO: Implement EntryCommit.to_dict()
+        return {
+            "timestamp": self.timestamp.hex(),
+            "entry_hash": self.entry_hash.hex(),
+            "ec_spent": self.ec_spent,
+            "ec_public_key": self.ec_public_key.hex(),
+            "signature": self.signature.hex(),
+        }
 
     def __str__(self):
         # TODO: convert timestamp to readable and EC Public Key to its base58 address
