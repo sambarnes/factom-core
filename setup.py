@@ -7,7 +7,13 @@ from setuptools import (
 deps = {
     'factom-core': [
         'factom-keys',
-        'plyvel'
+        'plyvel',
+    ],
+    'hydra': [
+        'bottle',
+        'click',
+        'plyvel',
+        'requests',
     ]
 }
 
