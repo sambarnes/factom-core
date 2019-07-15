@@ -58,8 +58,12 @@ class EntryBlock:
 
     header: EntryBlockHeader
     entry_hashes: dict
+
     _cached_keymr: bytes = None
     _cached_body_mr: bytes = None
+
+    directory_block_keymr: bytes = None
+    timestamp: int = None
 
     def __post_init__(self):
         # TODO: assert they're all here
@@ -150,17 +154,21 @@ class EntryBlock:
     def to_dict(self):
         return {
             # Required
-            "keymr": self.keymr,
-            "chain_id": self.header.chain_id,
-            "prev_keymr": self.header.prev_keymr,
-            "prev_full_hash": self.header.prev_full_hash,
+            "keymr": self.keymr.hex(),
+            "chain_id": self.header.chain_id.hex(),
+            "prev_keymr": self.header.prev_keymr.hex(),
+            "prev_full_hash": self.header.prev_full_hash.hex(),
             "sequence": self.header.sequence,
             "height": self.header.height,
-            "entry_hashes": self.entry_hashes,
+            "entry_hashes": {
+                minute: [h.hex() for h in hashes]
+                for minute, hashes in self.entry_hashes.items()
+            },
             # Optional contextual
-            "directory_block_keymr": self.directory_block_keymr,
+            "directory_block_keymr": None
+            if self.directory_block_keymr is None
+            else self.directory_block_keymr.hex(),
             "timestamp": self.timestamp,
-            "next_keymr": self.next_keymr,
         }
 
     def __str__(self):

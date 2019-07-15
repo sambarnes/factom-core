@@ -46,6 +46,9 @@ class MissingDataRequest(Message):
 
         return MissingDataRequest(timestamp=timestamp, request_hash=request_hash)
 
+    def to_dict(self):
+        return {"timestamp": self.timestamp.hex(), "request_hash": self.request_hash}
+
     def __str__(self):
         return "{}(hash={})".format(self.__class__.__name__, self.request_hash)
 
@@ -97,12 +100,14 @@ class MissingDataResponse(Message):
 
         return MissingDataResponse(requested_object=requested_object)
 
+    def to_dict(self):
+        assert type(self.requested_object) in {Entry, EntryBlock}
+        return {"requested_object": self.requested_object.to_dict()}
+
     def __str__(self):
-        is_entry = isinstance(self.requested_object, Entry)
-        object_type = "Entry" if is_entry else "Entry Block"
         h = (
             self.requested_object.entry_hash
-            if is_entry
+            if isinstance(self.requested_object, Entry)
             else self.requested_object.keymr
         )
-        return "{}(type={}, hash={})".format(self.__class__.__name__, object_type, h)
+        return f"{self.__class__.__name__}(type={self.requested_object.__class__.__name__}, hash={h})"

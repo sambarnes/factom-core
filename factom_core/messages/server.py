@@ -62,6 +62,15 @@ class AddServer(Message):
             signature=signature,
         )
 
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "chain_id": self.chain_id.hex(),
+            "is_federated": self.is_federated,
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
+
 
 @dataclass
 class ChangeServerKey(Message):
@@ -141,6 +150,18 @@ class ChangeServerKey(Message):
             signature=signature,
         )
 
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "chain_id": self.chain_id.hex(),
+            "admin_block_change": self.admin_block_change,
+            "key_type": self.key_type,
+            "priority": self.priority,
+            "new_key": self.new_key.hex(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
+
 
 @dataclass
 class RemoveServer(Message):
@@ -201,3 +222,12 @@ class RemoveServer(Message):
             public_key=public_key,
             signature=signature,
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "chain_id": self.chain_id.hex(),
+            "is_federated": self.is_federated,
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }

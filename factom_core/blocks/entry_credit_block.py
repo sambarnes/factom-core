@@ -181,7 +181,19 @@ class EntryCreditBlock:
         pass
 
     def to_dict(self):
-        pass
+        return {
+            "body_hash": self.header.body_hash.hex(),
+            "prev_header_hash": self.header.prev_header_hash.hex(),
+            "prev_full_hash": self.header.prev_full_hash.hex(),
+            "height": self.header.height,
+            "expansion_area": self.header.expansion_area.hex(),
+            "object_count": self.header.object_count,
+            "body_size": self.header.body_size,
+            "objects": {
+                minute: [o if type(o) is int else o.to_dict() for o in objects]
+                for minute, objects in self.objects.items()
+            },
+        }
 
     def __str__(self):
         return "{}(height={})".format(self.__class__.__name__, self.header.height)

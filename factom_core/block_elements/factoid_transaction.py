@@ -116,7 +116,28 @@ class FactoidTransaction:
         )
 
     def to_dict(self):
-        pass  # TODO: Implement FactoidTransaction.to_dict()
+        return {
+            "timestamp": self.timestamp.hex(),
+            "inputs": [
+                {"value": r.get("value"), "fct_address": r.get("fct_address").hex()}
+                for r in self.inputs
+            ],
+            "outputs": [
+                {"value": r.get("value"), "fct_address": r.get("fct_address").hex()}
+                for r in self.outputs
+            ],
+            "ec_purchases": [
+                {"value": r.get("value"), "ec_public_key": r.get("ec_public_key").hex()}
+                for r in self.ec_purchases
+            ],
+            "rcds": [
+                {
+                    "fct_public_key": r.get("fct_public_key").hex(),
+                    "signature": r.get("signature").hex(),
+                }
+                for r in self.rcds
+            ],
+        }
 
     def __str__(self):
         # TODO: convert timestamp to readable

@@ -104,13 +104,17 @@ class Entry:
     def to_dict(self):
         return {
             # Required
-            "chain_id": self.chain_id,
-            "entry_hash": self.entry_hash,
-            "external_ids": self.external_ids,
-            "content": self.content,
+            "chain_id": self.chain_id.hex(),
+            "entry_hash": self.entry_hash.hex(),
+            "external_ids": [e.hex() for e in self.external_ids],
+            "content": self.content.hex(),
             # Optional contextual
-            "directory_block_keymr": self.directory_block_keymr,
-            "entry_block_keymr": self.entry_block_keymr,
+            "directory_block_keymr": None
+            if self.directory_block_keymr is None
+            else self.directory_block_keymr.hex(),
+            "entry_block_keymr": None
+            if self.entry_block_keymr is None
+            else self.entry_block_keymr.hex(),
             "height": self.height,
             "timestamp": self.timestamp,
             "stage": self.stage,

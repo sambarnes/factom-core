@@ -132,6 +132,18 @@ class DirectoryBlockState(Message):
             signatures=signatures,
         )
 
+    def to_dict(self):
+        return {
+            "timestamp": self.timestamp.hex(),
+            "directory_block": self.directory_block.to_dict(),
+            "admin_block": self.admin_block.to_dict(),
+            "factoid_block": self.factoid_block.to_dict(),
+            "entry_credit_block": self.entry_credit_block.to_dict(),
+            "entry_blocks": [v.to_dict() for v in self.entry_blocks],
+            "entries": [v.to_dict() for v in self.entries],
+            "signatures": [{k: v.hex()} for pairs in self.signatures for k, v in pairs],
+        }
+
 
 @dataclass
 class DirectoryBlockStateRequest(Message):
@@ -183,6 +195,13 @@ class DirectoryBlockStateRequest(Message):
             block_height_end=block_height_end,
         )
 
+    def to_dict(self):
+        return {
+            "timestamp": self.timestamp.hex(),
+            "block_height_start": self.block_height_start,
+            "block_height_end": self.block_height_end,
+        }
+
 
 @dataclass()
 class BlockRequest(Message):
@@ -219,3 +238,6 @@ class BlockRequest(Message):
         timestamp, data = data[:6], data[6:]
         assert len(data) == 0, "Extra bytes remaining!"
         return BlockRequest(timestamp=timestamp)
+
+    def to_dict(self):
+        return {"timestamp": self.timestamp.hex()}

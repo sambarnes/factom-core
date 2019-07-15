@@ -64,7 +64,15 @@ class ChainCommit:
         )
 
     def to_dict(self):
-        pass  # TODO: Implement ChainCommit.to_dict()
+        return {
+            "timestamp": self.timestamp.hex(),
+            "chain_id_hash": self.chain_id_hash.hex(),
+            "commit_weld": self.commit_weld.hex(),
+            "entry_hash": self.entry_hash.hex(),
+            "ec_spent": self.ec_spent,
+            "ec_public_key": self.ec_public_key.hex(),
+            "signature": self.signature.hex(),
+        }
 
     def __str__(self):
         # TODO: convert timestamp to readable and EC Public Key to its base58 address

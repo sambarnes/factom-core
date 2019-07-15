@@ -180,19 +180,21 @@ class DirectoryBlock:
 
     def to_dict(self):
         return {
-            "keymr": self.keymr,
-            "network_id": self.header.network_id,
-            "body_mr": self.header.body_mr,
-            "prev_keymr": self.header.prev_keymr,
-            "next_keymr": self.next_keymr,
-            "prev_full_hash": self.header.prev_full_hash,
+            "keymr": self.keymr.hex(),
+            "network_id": self.header.network_id.hex(),
+            "body_mr": self.header.body_mr.hex(),
+            "prev_keymr": self.header.prev_keymr.hex(),
+            "prev_full_hash": self.header.prev_full_hash.hex(),
             "height": self.header.height,
-            "admin_block_lookup_hash": self.admin_block_lookup_hash,
-            "entry_credit_block_header_hash": self.entry_credit_block_header_hash,
-            "factoid_block_keymr": self.factoid_block_keymr,
+            "admin_block_lookup_hash": self.admin_block_lookup_hash.hex(),
+            "entry_credit_block_header_hash": self.entry_credit_block_header_hash.hex(),
+            "factoid_block_keymr": self.factoid_block_keymr.hex(),
             "entry_blocks": [
-                {"chain_id": chain_id, "keymr": keymr}
-                for chain_id, keymr in self.entry_blocks
+                {
+                    "chain_id": entry_block.get("chain_id").hex(),
+                    "keymr": entry_block.get("keymr").hex(),
+                }
+                for entry_block in self.entry_blocks
             ],
         }
 

@@ -71,3 +71,14 @@ class Heartbeat(Message):
             public_key=public_key,
             signature=signature,
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "timestamp": self.timestamp.hex(),
+            "secret_number": self.secret_number,
+            "height": self.height,
+            "directory_block_hash": self.directory_block_hash.hex(),
+            "chain_id": self.chain_id.hex(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }

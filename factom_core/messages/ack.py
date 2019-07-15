@@ -114,3 +114,21 @@ class Ack(Message):
             public_key=public_key,
             signature=signature,
         )
+
+    def to_dict(self):
+        return {
+            "vm_index": self.vm_index,
+            "timestamp": self.timestamp.hex(),
+            "salt": self.salt.hex(),
+            "salt_number": self.salt_number,
+            "message_hash": self.message_hash.hex(),
+            "full_message_hash": self.full_message_hash.hex(),
+            "leader_chain_id": self.leader_chain_id.hex(),
+            "height": self.height,
+            "process_list_height": self.process_list_height,
+            "minute": self.minute,
+            "serial_hash": self.serial_hash.hex(),
+            "data_area": self.data_area.hex(),
+            "public_key": self.public_key.hex(),
+            "signature": self.signature.hex(),
+        }
