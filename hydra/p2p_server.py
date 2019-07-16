@@ -1,5 +1,6 @@
 import base64
 import bottle
+import sys
 import factom_core.messages
 
 """
@@ -28,7 +29,6 @@ if msg.IsApplicationMessage() {
 Then rebuild and run his branch: https://github.com/WhoSoup/factomd/tree/FACTOMIZE_new_p2p
 """
 
-
 bottle.BaseRequest.MEMFILE_MAX = 1024 * 1024
 app = bottle.default_app()
 
@@ -52,14 +52,22 @@ def receive():
     req = bottle.request
     payload = base64.b64decode(req.json.get("payload").encode())
     msg = factom_core.messages.unmarshal_message(raw=payload)
-    print(msg.__class__.__name__)
-    print(msg.to_dict())
+    msg_filter = {
+        factom_core.messages.DirectoryBlockState.TYPE,
+        # factom_core.messages.DirectoryBlockSignature.TYPE,
+        # factom_core.messages.EndOfMinute.TYPE,
+    }
+    if msg.TYPE in msg_filter:
+        print(msg.__class__.__name__, msg.directory_block.header.height)
     return
 
 
 def run():
-    print("Starting Hacky P2P Server...")
-    bottle.run(host="localhost", port=8001)
+    print("Starting Hacky P2P Server (localhost:8001)...")
+    try:
+        bottle.run(host="localhost", port=8001, quiet=True)
+    except (KeyboardInterrupt, SystemExit):
+        sys.exit()
 
 
 if __name__ == "__main__":

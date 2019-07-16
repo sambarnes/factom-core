@@ -141,7 +141,9 @@ class DirectoryBlockState(Message):
             "entry_credit_block": self.entry_credit_block.to_dict(),
             "entry_blocks": [v.to_dict() for v in self.entry_blocks],
             "entries": [v.to_dict() for v in self.entries],
-            "signatures": [{k: v.hex()} for pairs in self.signatures for k, v in pairs],
+            "signatures": [
+                {k: v.hex()} for pairs in self.signatures for k, v in pairs.items()
+            ],
         }
 
 

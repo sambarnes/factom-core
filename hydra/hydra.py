@@ -5,6 +5,7 @@ import json
 import multiprocessing
 import os
 import requests
+import sys
 import time
 
 import factom_core.db
@@ -38,17 +39,19 @@ def run():
     print(HYDRA_HEADER)
     p2p = multiprocessing.Process(name="p2p", target=p2p_server.run)
     api = multiprocessing.Process(name="api_server", target=api_server.run)
-    sync = multiprocessing.Process(name="sync", target=sync_start)
 
     p2p.start()
     api.start()
-    sync.start()
+    sync_start()
 
 
 def sync_start():
-    while True:
-        print("Running node...")
-        time.sleep(30)
+    print("Running node...")
+    try:
+        while True:
+            time.sleep(30)
+    except (KeyboardInterrupt, SystemExit):
+        sys.exit()
 
 
 # --------------------
@@ -166,8 +169,8 @@ def get_entry(connection_type, entry_hash):
 
 def get_db() -> factom_core.db.FactomdLevelDB:
     home = os.getenv("HOME")
-    path = f"{home}/.factom/m2/main-database/ldb/MAIN/factoid_level.db/"
-    return factom_core.db.FactomdLevelDB(path)
+    path = f"{home}/.factom/hydra/data/"
+    return factom_core.db.FactomdLevelDB(path, create_if_missing=True)
 
 
 if __name__ == "__main__":

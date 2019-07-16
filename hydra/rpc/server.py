@@ -1,5 +1,7 @@
 import bottle
+import json
 import os
+import sys
 import factom_core.messages
 import factom_core.db
 from enum import Enum
@@ -41,6 +43,8 @@ def get_directory_block(keymr: str):
     db = get_db()
     block = db.get_directory_block(keymr=bytes.fromhex(keymr))
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -49,6 +53,8 @@ def get_directory_block_by_height(height: int):
     db = get_db()
     block = db.get_directory_block(height=height)
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -57,6 +63,8 @@ def get_admin_block(lookup_hash: str):
     db = get_db()
     block = db.get_factoid_block(keymr=bytes.fromhex(lookup_hash))
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -65,6 +73,8 @@ def get_admin_block_by_height(height: int):
     db = get_db()
     block = db.get_admin_block(height=height)
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -73,6 +83,8 @@ def get_factoid_block(keymr: str):
     db = get_db()
     block = db.get_factoid_block(keymr=bytes.fromhex(keymr))
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -81,6 +93,8 @@ def get_factoid_block_by_height(height: int):
     db = get_db()
     block = db.get_factoid_block(height=height)
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -89,6 +103,8 @@ def get_entry_credit_block(header_hash: str):
     db = get_db()
     block = db.get_entry_credit_block(keymr=bytes.fromhex(header_hash))
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -97,6 +113,8 @@ def get_entry_credit_block_by_height(height: int):
     db = get_db()
     block = db.get_entry_credit_block(height=height)
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -105,6 +123,8 @@ def get_entry_block(keymr: str):
     db = get_db()
     block = db.get_entry_block(keymr=bytes.fromhex(keymr))
     db.close()
+    if block is None:
+        bottle.abort(404)
     return block.to_dict()
 
 
@@ -113,18 +133,29 @@ def get_entry(entry_hash: str):
     db = get_db()
     entry = db.get_entry(bytes.fromhex(entry_hash))
     db.close()
+    if entry is None:
+        bottle.abort(404)
     return entry.to_dict()
+
+
+@bottle.error(404)
+def error404(e):
+    body = {"errors": {"detail": "Object not found"}}
+    return json.dumps(body, separators=(",", ":"))
 
 
 def get_db() -> factom_core.db.FactomdLevelDB:
     home = os.getenv("HOME")
-    path = f"{home}/.factom/m2/main-database/ldb/MAIN/factoid_level.db/"
-    return factom_core.db.FactomdLevelDB(path)
+    path = f"{home}/.factom/hydra/data/"
+    return factom_core.db.FactomdLevelDB(path, create_if_missing=True)
 
 
 def run():
-    print("Starting API Server...")
-    bottle.run(host="localhost", port=8000)
+    print("Starting API Server (localhost:8000)...")
+    try:
+        bottle.run(host="localhost", port=8000, quiet=True)
+    except (KeyboardInterrupt, SystemExit):
+        sys.exit()
 
 
 if __name__ == "__main__":

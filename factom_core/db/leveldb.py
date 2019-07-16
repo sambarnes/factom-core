@@ -39,7 +39,7 @@ KEY_VALUE_STORE = b"KeyValueStore;"
 
 
 class FactomdLevelDB:
-    def __init__(self, path: str):
+    def __init__(self, path: str, **kwargs):
         """
         A wrapper around the legacy factomd level-db
 
@@ -48,7 +48,7 @@ class FactomdLevelDB:
         Custom = /home/$USER/.factom/m2/custom-database/ldb/LOCAL/factoid_level.db/
         Local = /home/$USER/.factom/m2/local-database/ldb/LOCAL/factoid_level.db/
         """
-        self._db = plyvel.DB(path)
+        self._db = plyvel.DB(path, **kwargs)
 
     def close(self):
         self._db.close()
