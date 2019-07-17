@@ -37,19 +37,25 @@ def main():
 def run():
     """Main entry point for the node"""
     print(HYDRA_HEADER)
-    p2p = multiprocessing.Process(name="p2p", target=p2p_server.run)
+
+    inbox = multiprocessing.Queue()
+    p2p = multiprocessing.Process(name="p2p", target=p2p_server.run, args=(inbox,))
     api = multiprocessing.Process(name="api_server", target=api_server.run)
 
     p2p.start()
     api.start()
-    sync_start()
+    sync_start(inbox)
 
 
-def sync_start():
+def sync_start(inbox: multiprocessing.Queue):
     print("Running node...")
     try:
         while True:
-            time.sleep(30)
+            msg = inbox.get()
+            if msg is None:
+                time.sleep(0.5)
+                continue
+            print(msg.__class__.__name__, msg.to_dict())
     except (KeyboardInterrupt, SystemExit):
         sys.exit()
 

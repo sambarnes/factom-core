@@ -48,7 +48,7 @@ def get_directory_block(keymr: str):
     return block.to_dict()
 
 
-@bottle.get(f"{RestPaths.DIRECTORY_BLOCK.value}/<height:int>")
+@app.get(f"{RestPaths.DIRECTORY_BLOCK.value}/<height:int>")
 def get_directory_block_by_height(height: int):
     db = get_db()
     block = db.get_directory_block(height=height)
@@ -68,7 +68,7 @@ def get_admin_block(lookup_hash: str):
     return block.to_dict()
 
 
-@bottle.get(f"{RestPaths.ADMIN_BLOCK.value}/<height:int>")
+@app.get(f"{RestPaths.ADMIN_BLOCK.value}/<height:int>")
 def get_admin_block_by_height(height: int):
     db = get_db()
     block = db.get_admin_block(height=height)
@@ -144,18 +144,18 @@ def error404(e):
     return json.dumps(body, separators=(",", ":"))
 
 
-def get_db() -> factom_core.db.FactomdLevelDB:
-    home = os.getenv("HOME")
-    path = f"{home}/.factom/hydra/data/"
-    return factom_core.db.FactomdLevelDB(path, create_if_missing=True)
-
-
 def run():
     print("Starting API Server (localhost:8000)...")
     try:
         bottle.run(host="localhost", port=8000, quiet=True)
     except (KeyboardInterrupt, SystemExit):
         sys.exit()
+
+
+def get_db() -> factom_core.db.FactomdLevelDB:
+    home = os.getenv("HOME")
+    path = f"{home}/.factom/hydra/data/"
+    return factom_core.db.FactomdLevelDB(path, create_if_missing=True)
 
 
 if __name__ == "__main__":

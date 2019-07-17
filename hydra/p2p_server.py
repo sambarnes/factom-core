@@ -1,5 +1,5 @@
-import base64
-import bottle
+import multiprocessing
+import socketserver
 import sys
 import factom_core.messages
 
@@ -11,17 +11,12 @@ Place the following snippet at this line of Who's p2p package: https://github.co
 
 if msg.IsApplicationMessage() {
     go func() {
-        forwardedMessageBody, _ := json.Marshal(map[string]string{
-            "payload": base64.StdEncoding.EncodeToString(msg.Payload),
-        })
-        resp, _ := http.Post("http://localhost:8000", "application/json", bytes.NewBuffer(forwardedMessageBody))
+        conn, err := net.Dial("tcp", "127.0.0.1:8001")
         if err != nil {
-            // handle error
+            return
         }
-        time.Sleep(time.Millisecond * 50)
-        if resp != nil {
-            _ = resp.Body.Close()
-        }
+        payload := append(msg.Payload, []byte("\n")...)
+        _, _ = conn.Write(payload)
     }()
 }
 
@@ -29,46 +24,30 @@ if msg.IsApplicationMessage() {
 Then rebuild and run his branch: https://github.com/WhoSoup/factomd/tree/FACTOMIZE_new_p2p
 """
 
-bottle.BaseRequest.MEMFILE_MAX = 1024 * 1024
-app = bottle.default_app()
+
+class P2PServer(socketserver.TCPServer):
+    def __init__(
+        self,
+        inbox: multiprocessing.Queue,
+        server_address,
+        RequestHandlerClass,
+        bind_and_activate=True,
+    ):
+        super().__init__(server_address, RequestHandlerClass, bind_and_activate)
+        self.inbox = inbox
 
 
-@bottle.hook("before_request")
-def strip_path():
-    """Strip trailing '/' on all requests. '/foo' and /foo/' are two unique endpoints in bottle"""
-    bottle.request.environ["PATH_INFO"] = bottle.request.environ["PATH_INFO"].rstrip(
-        "/"
-    )
+class P2PHandler(socketserver.StreamRequestHandler):
+    def handle(self):
+        payload = self.rfile.readline().strip()
+        msg = factom_core.messages.unmarshal_message(raw=payload)
+        self.server.inbox.put(msg)
 
 
-@bottle.get("/health")
-def health_check():
-    return {"data": "Healthy!"}
-
-
-@bottle.post("/")
-def receive():
-    """Receive a forwarded p2p message"""
-    req = bottle.request
-    payload = base64.b64decode(req.json.get("payload").encode())
-    msg = factom_core.messages.unmarshal_message(raw=payload)
-    msg_filter = {
-        factom_core.messages.DirectoryBlockState.TYPE,
-        # factom_core.messages.DirectoryBlockSignature.TYPE,
-        # factom_core.messages.EndOfMinute.TYPE,
-    }
-    if msg.TYPE in msg_filter:
-        print(msg.__class__.__name__, msg.directory_block.header.height)
-    return
-
-
-def run():
+def run(inbox: multiprocessing.Queue):
     print("Starting Hacky P2P Server (localhost:8001)...")
+    server = P2PServer(inbox, ("localhost", 8001), P2PHandler)
     try:
-        bottle.run(host="localhost", port=8001, quiet=True)
+        server.serve_forever()
     except (KeyboardInterrupt, SystemExit):
         sys.exit()
-
-
-if __name__ == "__main__":
-    run()
