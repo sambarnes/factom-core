@@ -1,27 +1,38 @@
+import hashlib
+from dataclasses import dataclass
 from factom_core.utils import varint
 
 
+@dataclass
 class FactoidTransaction:
 
-    def __init__(self, timestamp: bytes, inputs: list, outputs: list, ec_purchases: list, rcds: list, **kwargs):
-        # Required fields. Must be in every FactoidTransaction
-        self.timestamp = timestamp
-        self.inputs = inputs
-        self.outputs = outputs
-        self.ec_purchases = ec_purchases
-        self.rcds = rcds
+    timestamp: bytes
+    inputs: list
+    outputs: list
+    ec_purchases: list
+    rcds: list
+
+    def __ipost_nit__(self):
         # TODO: assert they're all here
-        # TODO: use kwargs for some optional metadata
+        pass
 
     def is_coinbase(self):
         # TODO: Coinbase outputs be zero too right? Just matters that everything else is definitely zero
-        return len(self.inputs) == 0 and len(self.ec_purchases) == 0 and len(self.rcds) == 0
+        return (
+            len(self.inputs) == 0
+            and len(self.ec_purchases) == 0
+            and len(self.rcds) == 0
+        )
+
+    @property
+    def hash(self):
+        return hashlib.sha256(self.marshal()).digest()
 
     def marshal(self):
         """Marshals the FactoidTransaction according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
         """
-        data = b'\x02'
+        data = b"\x02"
         data += self.timestamp
         data += bytes([len(self.inputs)])
         data += bytes([len(self.outputs)])
@@ -41,7 +52,7 @@ class FactoidTransaction:
         for rcd in self.rcds:
             fct_public_key = rcd.get("fct_public_key")
             signature = rcd.get("signature")
-            data += b'\x01' + fct_public_key + signature
+            data += b"\x01" + fct_public_key + signature
         return data
 
     @classmethod
@@ -50,7 +61,7 @@ class FactoidTransaction:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
         """
         obj, data = FactoidTransaction.unmarshal_with_remainder(raw)
-        assert len(data) == 0, 'Extra bytes remaining!'
+        assert len(data) == 0, "Extra bytes remaining!"
         return obj
 
     @classmethod
@@ -72,52 +83,68 @@ class FactoidTransaction:
         for i in range(input_count):
             value, data = varint.decode(data)
             fct_address, data = data[:32], data[32:]
-            inputs.append({
-                "value": value,
-                "fct_address": fct_address
-            })
+            inputs.append({"value": value, "fct_address": fct_address})
 
         outputs = []
         for i in range(output_count):
             value, data = varint.decode(data)
             fct_address, data = data[:32], data[32:]
-            outputs.append({
-                "value": value,
-                "fct_address": fct_address
-            })
+            outputs.append({"value": value, "fct_address": fct_address})
 
         ec_purchases = []
         for i in range(ec_purchase_count):
             value, data = varint.decode(data)
             ec_public_key, data = data[:32], data[32:]
-            ec_purchases.append({
-                "value": value,
-                "ec_public_key": ec_public_key
-            })
+            ec_purchases.append({"value": value, "ec_public_key": ec_public_key})
 
         rcds = []
         for i in range(input_count):
             data = data[1:]  # skip 1 byte version number, always 0x01 for now
             fct_public_key, data = data[:32], data[32:]
             signature, data = data[:64], data[64:]
-            rcds.append({
-                "fct_public_key": fct_public_key,
-                "signature": signature
-            })
+            rcds.append({"fct_public_key": fct_public_key, "signature": signature})
 
-        return FactoidTransaction(
-            timestamp=timestamp,
-            inputs=inputs,
-            outputs=outputs,
-            ec_purchases=ec_purchases,
-            rcds=rcds
-        ), data
+        return (
+            FactoidTransaction(
+                timestamp=timestamp,
+                inputs=inputs,
+                outputs=outputs,
+                ec_purchases=ec_purchases,
+                rcds=rcds,
+            ),
+            data,
+        )
 
     def to_dict(self):
-        pass  # TODO: Implement FactoidTransaction.to_dict()
+        return {
+            "timestamp": self.timestamp.hex(),
+            "inputs": [
+                {"value": r.get("value"), "fct_address": r.get("fct_address").hex()}
+                for r in self.inputs
+            ],
+            "outputs": [
+                {"value": r.get("value"), "fct_address": r.get("fct_address").hex()}
+                for r in self.outputs
+            ],
+            "ec_purchases": [
+                {"value": r.get("value"), "ec_public_key": r.get("ec_public_key").hex()}
+                for r in self.ec_purchases
+            ],
+            "rcds": [
+                {
+                    "fct_public_key": r.get("fct_public_key").hex(),
+                    "signature": r.get("signature").hex(),
+                }
+                for r in self.rcds
+            ],
+        }
 
     def __str__(self):
         # TODO: convert timestamp to readable
-        return '{}(timestamp={}, inputs={}, outputs={}, ec_purchases={})'.format(
-            self.__class__.__name__, self.timestamp, len(self.inputs), len(self.outputs), len(self.ec_purchases))
-
+        return "{}(timestamp={}, inputs={}, outputs={}, ec_purchases={})".format(
+            self.__class__.__name__,
+            self.timestamp,
+            len(self.inputs),
+            len(self.outputs),
+            len(self.ec_purchases),
+        )

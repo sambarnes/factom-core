@@ -5,6 +5,7 @@ class BaseBlockchain:
     """
     The base class for all Blockchain objects
     """
+
     network_id = None  # type: bytes
     vms = None  # type: list
 
@@ -45,6 +46,7 @@ class Blockchain(BaseBlockchain):
     VM classes, delegating operations to the appropriate VM depending on the
     current block / minute number.
     """
+
     def __init__(self) -> None:
         if not isinstance(self.network_id, bytes) or len(self.network_id) != 4:
             raise ValueError(
