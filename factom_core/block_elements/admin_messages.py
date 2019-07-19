@@ -6,6 +6,8 @@ from factom_core.utils import varint
 class AdminMessage:
     """Base class to inherit from"""
 
+    ADMIN_ID = None
+
     def marshal(self):
         raise NotImplementedError("Must be implemented by subclasses")
 
@@ -534,7 +536,7 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
 
 
 @dataclass
-class ServerFaultHandoff:
+class ServerFaultHandoff(AdminMessage):
     ADMIN_ID = 0x0A
     MESSAGE_SIZE = 0
     """

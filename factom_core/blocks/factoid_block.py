@@ -1,9 +1,11 @@
 import hashlib
 import struct
-from .directory_block import DirectoryBlock
 from dataclasses import dataclass
+from typing import Dict, List
+
 from factom_core.block_elements.factoid_transaction import FactoidTransaction
 from factom_core.utils import merkle, varint
+from .directory_block import DirectoryBlock
 
 
 @dataclass
@@ -19,7 +21,7 @@ class FactoidBlockHeader:
     ec_exchange_rate: int
     height: int
     expansion_area: bytes
-    transaction_count: int
+    tx_count: int
     body_size: int
 
     def __post_init__(self):
@@ -36,7 +38,7 @@ class FactoidBlockHeader:
         buf.extend(struct.pack(">I", self.height))
         buf.extend(varint.encode(len(self.expansion_area)))
         buf.extend(self.expansion_area)
-        buf.extend(struct.pack(">I", self.transaction_count))
+        buf.extend(struct.pack(">I", self.tx_count))
         buf.extend(struct.pack(">I", self.body_size))
         return bytes(buf)
 
@@ -62,7 +64,7 @@ class FactoidBlockHeader:
             data[header_expansion_size:],
         )
 
-        transaction_count, data = struct.unpack(">I", data[:4])[0], data[4:]
+        tx_count, data = struct.unpack(">I", data[:4])[0], data[4:]
         body_size, data = struct.unpack(">I", data[:4])[0], data[4:]
         return (
             FactoidBlockHeader(
@@ -72,7 +74,7 @@ class FactoidBlockHeader:
                 ec_exchange_rate=ec_exchange_rate,
                 height=height,
                 expansion_area=header_expansion_area,
-                transaction_count=transaction_count,
+                tx_count=tx_count,
                 body_size=body_size,
             ),
             data,
@@ -80,22 +82,19 @@ class FactoidBlockHeader:
 
 
 @dataclass
-class FactoidBlock:
+class FactoidBlockBody:
 
-    header: FactoidBlockHeader
-    transactions: dict
-
-    _cached_keymr: bytes = None
-    _cached_body_mr: bytes = None
+    transactions: Dict[int, List[FactoidTransaction]]
+    _cached_mr: bytes = None
 
     def __post_init__(self):
         # TODO: value assertions
         pass
 
     @property
-    def body_mr(self):
-        if self._cached_body_mr is not None:
-            return self._cached_body_mr
+    def merkle_root(self):
+        if self._cached_mr is not None:
+            return self._cached_mr
 
         # For Factoid Blocks, body MR is implemented differently in that you first take a single sha256 of every element
         # in the body. And you make a Merkle tree out of the hashed body elements, rather than the elements themselves.
@@ -105,15 +104,92 @@ class FactoidBlock:
                 body_elements.append(tx.hash)
             minute_marker = hashlib.sha256(b"\x00").digest()
             body_elements.append(minute_marker)
-        self._cached_body_mr = merkle.get_merkle_root(body_elements)
-        return self._cached_body_mr
+        self._cached_mr = merkle.get_merkle_root(body_elements)
+        return self._cached_mr
+
+    def marshal(self):
+        buf = bytearray()
+        for transactions in self.transactions.values():
+            for tx in transactions:
+                buf.extend(tx.marshal())
+            buf.append(0x00)
+        return bytes(buf)
+
+    @classmethod
+    def unmarshal(cls, raw: bytes, tx_count: int):
+        body, data = cls.unmarshal_with_remainder(raw, tx_count)
+        assert len(data) == 0, "Extra bytes remaining!"
+        return body
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes, tx_count: int):
+        data = raw
+        transactions = {}
+        current_minute_transactions = []
+        minute = 1
+        tx_count_observed = 0
+        while True:
+            if data[0] == 0:
+                data = data[1:]
+                transactions[minute] = current_minute_transactions
+                tx_count_observed += len(current_minute_transactions)
+                if minute == 10:
+                    break
+                current_minute_transactions = []
+                minute += 1
+                continue
+            tx, data = FactoidTransaction.unmarshal_with_remainder(data)
+            current_minute_transactions.append(tx)
+
+        assert tx_count_observed == tx_count, "Unexpected transaction count!"
+
+        return FactoidBlockBody(transactions=transactions), data
+
+    def construct_header(
+        self,
+        prev_keymr: bytes,
+        prev_ledger_keymr: bytes,
+        ec_exchange_rate: int,
+        height: int,
+    ) -> FactoidBlockHeader:
+        """
+        Seals this factoid block body by constructing and returning it's header
+        """
+        tx_count = 0
+        for tx_list in self.transactions.values():
+            tx_count += len(tx_list)
+        return FactoidBlockHeader(
+            body_mr=self.merkle_root,
+            prev_keymr=prev_keymr,
+            prev_ledger_keymr=prev_ledger_keymr,
+            ec_exchange_rate=ec_exchange_rate,
+            height=height,
+            expansion_area=b"",
+            tx_count=tx_count,
+            body_size=len(self.marshal()),
+        )
+
+
+@dataclass
+class FactoidBlock:
+
+    header: FactoidBlockHeader
+    body: FactoidBlockBody
+
+    _cached_keymr: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
     def keymr(self):
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body_mr)
+        self._cached_keymr = merkle.calculate_keymr(
+            self.header.marshal(), self.body.merkle_root
+        )
         return self._cached_keymr
 
     @property
@@ -128,10 +204,7 @@ class FactoidBlock:
         """
         buf = bytearray()
         buf.extend(self.header.marshal())
-        for transactions in self.transactions.values():
-            for tx in transactions:
-                buf.extend(tx.marshal())
-            buf.append(0x00)
+        buf.extend(self.body.marshal())
         return bytes(buf)
 
     @classmethod
@@ -151,29 +224,8 @@ class FactoidBlock:
     @classmethod
     def unmarshal_with_remainder(cls, raw: bytes):
         header, data = FactoidBlockHeader.unmarshal_with_remainder(raw)
-        # Body
-        transactions = {}
-        current_minute_transactions = []
-        minute = 1
-        transaction_count = 0
-        while True:
-            if data[0] == 0:
-                data = data[1:]
-                transactions[minute] = current_minute_transactions
-                transaction_count += len(current_minute_transactions)
-                if minute == 10:
-                    break
-                current_minute_transactions = []
-                minute += 1
-                continue
-            tx, data = FactoidTransaction.unmarshal_with_remainder(data)
-            current_minute_transactions.append(tx)
-
-        assert (
-            transaction_count == header.transaction_count
-        ), "Unexpected transaction count!"
-
-        return FactoidBlock(header=header, transactions=transactions), data
+        body, data = FactoidBlockBody.unmarshal_with_remainder(data, header.tx_count)
+        return FactoidBlock(header=header, body=body), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass
@@ -186,11 +238,11 @@ class FactoidBlock:
             "ec_exchange_rate": self.header.ec_exchange_rate,
             "height": self.header.height,
             "expansion_area": self.header.expansion_area.hex(),
-            "transaction_count": self.header.transaction_count,
+            "transaction_count": self.header.tx_count,
             "body_size": self.header.body_size,
             "transactions": {
                 minute: tx.to_dict()
-                for minute, txs in self.transactions.items()
+                for minute, txs in self.body.transactions.items()
                 for tx in txs
             },
         }

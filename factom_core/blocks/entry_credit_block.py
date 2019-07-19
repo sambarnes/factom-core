@@ -1,11 +1,16 @@
 import hashlib
 import struct
-from .directory_block import DirectoryBlock
 from dataclasses import dataclass
+from typing import Dict, List, Union
+
 from factom_core.block_elements.balance_increase import BalanceIncrease
 from factom_core.block_elements.chain_commit import ChainCommit
 from factom_core.block_elements.entry_commit import EntryCommit
 from factom_core.utils import varint
+from .directory_block import DirectoryBlock
+
+
+ECIDTypes = Union[ChainCommit, EntryCommit, int]
 
 
 @dataclass
@@ -79,33 +84,16 @@ class EntryCreditBlockHeader:
 
 
 @dataclass
-class EntryCreditBlock:
+class EntryCreditBlockBody:
 
-    header: EntryCreditBlockHeader
-    objects: dict
-
-    _cached_header_hash: bytes = None
+    objects: Dict[int, List[ECIDTypes]]
 
     def __post_init__(self):
         # TODO: value assertions
         pass
 
-    @property
-    def header_hash(self):
-        if self._cached_header_hash is not None:
-            return self._cached_header_hash
-        self._cached_header_hash = hashlib.sha256(self.header.marshal()).digest()
-        return self._cached_header_hash
-
     def marshal(self):
-        """Marshals the directory block according to the byte-level representation shown at
-        https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-credit-block
-
-        Data returned does not include contextual metadata, such as timestamp or the pointer to the
-        next entry-credit block.
-        """
         buf = bytearray()
-        buf.extend(self.header.marshal())
         for minute, objects in self.objects.items():
             for o in objects:
                 if isinstance(o, int):
@@ -127,26 +115,17 @@ class EntryCreditBlock:
         return bytes(buf)
 
     @classmethod
-    def unmarshal(cls, raw: bytes):
-        """Returns a new EntryCreditBlock object, unmarshalling given bytes according to:
-        https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-credit-block
-
-        Useful for working with a single ecblock out of context, pulled directly from a factomd database for instance.
-
-        EntryCreditBlock created will not include contextual metadata, such as timestamp or the pointer to the
-        next entry-credit block.
-        """
-        block, data = cls.unmarshal_with_remainder(raw)
+    def unmarshal(cls, raw: bytes, object_count: int):
+        body, data = cls.unmarshal_with_remainder(raw, object_count)
         assert len(data) == 0, "Extra bytes remaining!"
-        return block
+        return body
 
     @classmethod
-    def unmarshal_with_remainder(cls, raw: bytes):
-        header, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
-        # Body
+    def unmarshal_with_remainder(cls, raw: bytes, object_count: int):
+        data = raw
         objects = {}  # map of minute --> objects array
         current_minute_objects = []
-        for i in range(header.object_count):
+        for i in range(object_count):
             ecid, data = data[0], data[1:]
             if ecid == 0x00:
                 server_index, data = data[0], data[1:]
@@ -175,7 +154,82 @@ class EntryCreditBlock:
             else:
                 raise ValueError
 
-        return EntryCreditBlock(header=header, objects=objects), data
+        return EntryCreditBlockBody(objects=objects), data
+
+    def construct_header(
+        self, prev_header_hash: bytes, prev_full_hash: bytes, height: int
+    ) -> EntryCreditBlockHeader:
+        object_count = 0
+        for object_list in self.objects.values():
+            object_count += len(object_list)
+        marshalled_body = self.marshal()
+        return EntryCreditBlockHeader(
+            body_hash=hashlib.sha256(marshalled_body).digest(),
+            prev_header_hash=prev_header_hash,
+            prev_full_hash=prev_full_hash,
+            height=height,
+            expansion_area=b"",
+            object_count=object_count,
+            body_size=len(marshalled_body),
+        )
+
+
+@dataclass
+class EntryCreditBlock:
+
+    header: EntryCreditBlockHeader
+    body: EntryCreditBlockBody
+
+    _cached_header_hash: bytes = None
+
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
+
+    @property
+    def header_hash(self):
+        if self._cached_header_hash is not None:
+            return self._cached_header_hash
+        self._cached_header_hash = hashlib.sha256(self.header.marshal()).digest()
+        return self._cached_header_hash
+
+    @property
+    def full_hash(self):
+        return hashlib.sha256(self.marshal()).digest()
+
+    def marshal(self):
+        """Marshals the directory block according to the byte-level representation shown at
+        https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-credit-block
+
+        Data returned does not include contextual metadata, such as timestamp or the pointer to the
+        next entry-credit block.
+        """
+        buf = bytearray()
+        buf.extend(self.header.marshal())
+        buf.extend(self.body.marshal())
+        return bytes(buf)
+
+    @classmethod
+    def unmarshal(cls, raw: bytes):
+        """Returns a new EntryCreditBlock object, unmarshalling given bytes according to:
+        https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-credit-block
+
+        Useful for working with a single ecblock out of context, pulled directly from a factomd database for instance.
+
+        EntryCreditBlock created will not include contextual metadata, such as timestamp or the pointer to the
+        next entry-credit block.
+        """
+        block, data = cls.unmarshal_with_remainder(raw)
+        assert len(data) == 0, "Extra bytes remaining!"
+        return block
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes):
+        header, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
+        body, data = EntryCreditBlockBody.unmarshal_with_remainder(
+            data, header.object_count
+        )
+        return EntryCreditBlock(header=header, body=body), data
 
     def add_context(self, directory_block: DirectoryBlock):
         pass
@@ -191,7 +245,7 @@ class EntryCreditBlock:
             "body_size": self.header.body_size,
             "objects": {
                 minute: [o if type(o) is int else o.to_dict() for o in objects]
-                for minute, objects in self.objects.items()
+                for minute, objects in self.body.objects.items()
             },
         }
 

@@ -109,7 +109,7 @@ class TestAdminBlock(unittest.TestCase):
         assert block.header.height == expected_height
         assert block.header.expansion_area.hex() == expected_header_expansion_area
         assert block.header.message_count == expected_message_count
-        assert len(block.messages) == expected_message_count
+        assert len(block.body.messages) == expected_message_count
 
     def test_marshal(self):
         block = AdminBlock.unmarshal(bytes.fromhex(TestAdminBlock.test_data))

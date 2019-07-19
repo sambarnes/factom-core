@@ -98,15 +98,16 @@ class TestDirectoryBlock(unittest.TestCase):
         assert block.header.prev_full_hash.hex() == expected_prev_full_hash
         assert block.header.timestamp == expected_timestamp
         assert block.header.height == expected_height
-        assert block.header.block_count == len(expected_entry_blocks) + 3
-        assert block.admin_block_lookup_hash.hex() == expected_admin_block_lookup_hash
         assert (
-            block.entry_credit_block_header_hash.hex()
+            block.body.admin_block_lookup_hash.hex() == expected_admin_block_lookup_hash
+        )
+        assert (
+            block.body.entry_credit_block_header_hash.hex()
             == expected_entry_credit_block_header_hash
         )
-        assert block.factoid_block_keymr.hex() == expected_factoid_block_keymr
-        assert len(block.entry_blocks) == len(expected_entry_blocks)
-        for i, entry_block in enumerate(block.entry_blocks):
+        assert block.body.factoid_block_keymr.hex() == expected_factoid_block_keymr
+        assert len(block.body.entry_blocks) == len(expected_entry_blocks)
+        for i, entry_block in enumerate(block.body.entry_blocks):
             assert entry_block.get("chain_id").hex() == expected_entry_blocks[i].get(
                 "chain_id"
             )
@@ -132,6 +133,6 @@ class TestDirectoryBlock(unittest.TestCase):
             "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
         )
         block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
-        assert block.body_mr.hex() == expected_body_mr, "{} != {}".format(
-            block.body_mr.hex(), expected_body_mr
+        assert block.body.merkle_root.hex() == expected_body_mr, "{} != {}".format(
+            block.body.merkle_root.hex(), expected_body_mr
         )

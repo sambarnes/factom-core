@@ -62,7 +62,7 @@ class TestEntryBlock(unittest.TestCase):
         assert block.header.prev_full_hash.hex() == expected_prev_full_hash
         assert block.header.sequence == expected_sequence
         assert block.header.height == expected_height
-        for minute, entry_hashes in block.entry_hashes.items():
+        for minute, entry_hashes in block.body.entry_hashes.items():
             for i, entry_hash in enumerate(entry_hashes):
                 assert entry_hash.hex() == expected_entry_hashes[minute][i]
 
@@ -82,4 +82,8 @@ class TestEntryBlock(unittest.TestCase):
             "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
         )
         block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
-        assert block.body_mr.hex() == block.header.body_mr.hex() == expected_body_mr
+        assert (
+            block.body.merkle_root.hex()
+            == block.header.body_mr.hex()
+            == expected_body_mr
+        )

@@ -42,7 +42,7 @@ class TestFactoidBlock(unittest.TestCase):
         )
         expected_ec_exchange_rate = 16500
         expected_height = 199535
-        expected_transaction_count = 4
+        expected_tx_count = 4
 
         block = FactoidBlock.unmarshal(bytes.fromhex(TestFactoidBlock.test_data))
         assert block.header.body_mr.hex() == expected_body_mr
@@ -50,11 +50,11 @@ class TestFactoidBlock(unittest.TestCase):
         assert block.header.prev_ledger_keymr.hex() == expected_prev_ledger_keymr
         assert block.header.ec_exchange_rate == expected_ec_exchange_rate
         assert block.header.height == expected_height
-        assert block.header.transaction_count == expected_transaction_count
-        transaction_count = 0
-        for minute, transactions in block.transactions.items():
-            transaction_count += len(transactions)
-        assert transaction_count == expected_transaction_count
+        assert block.header.tx_count == expected_tx_count
+        tx_count = 0
+        for minute, transactions in block.body.transactions.items():
+            tx_count += len(transactions)
+        assert tx_count == expected_tx_count
 
     def test_marshal(self):
         block = FactoidBlock.unmarshal(bytes.fromhex(TestFactoidBlock.test_data))
@@ -74,6 +74,6 @@ class TestFactoidBlock(unittest.TestCase):
             "a501d7500373bae88158d5e7062ca178528cc8d405c31f28352a548e5841e9e8"
         )
         block = FactoidBlock.unmarshal(bytes.fromhex(TestFactoidBlock.test_data))
-        assert block.body_mr.hex() == expected_body_mr, "{} != {}".format(
-            block.body_mr.hex(), expected_body_mr
+        assert block.body.merkle_root.hex() == expected_body_mr, "{} != {}".format(
+            block.body.merkle_root.hex(), expected_body_mr
         )

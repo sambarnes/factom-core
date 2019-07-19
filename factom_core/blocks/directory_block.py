@@ -1,6 +1,8 @@
-import factom_core
+import hashlib
 import struct
 from dataclasses import dataclass
+
+import factom_core
 from factom_core.utils import merkle
 
 
@@ -60,28 +62,23 @@ class DirectoryBlockHeader:
 
 
 @dataclass
-class DirectoryBlock:
+class DirectoryBlockBody:
 
-    header: DirectoryBlockHeader
     admin_block_lookup_hash: bytes
     entry_credit_block_header_hash: bytes
     factoid_block_keymr: bytes
     entry_blocks: list
 
-    _cached_keymr: bytes = None
-    _cached_body_mr: bytes = None
+    _cached_mr: bytes = None
 
-    def ___post_init__(self, **kwargs):
-        # TODO: assert they're all here
-
-        # Optional contextual fields
-        self.next_keymr = kwargs.get("next_keymr")
-        self.anchor_entry_hash = kwargs.get("anchor_entry_hash")
+    def __post_init__(self):
+        # TODO: value assertions
+        pass
 
     @property
-    def body_mr(self):
-        if self._cached_body_mr is not None:
-            return self._cached_body_mr
+    def merkle_root(self):
+        if self._cached_mr is not None:
+            return self._cached_mr
 
         body_elements = [
             factom_core.blocks.AdminBlockHeader.CHAIN_ID,
@@ -94,16 +91,101 @@ class DirectoryBlock:
         for e_block in self.entry_blocks:
             body_elements.append(e_block.get("chain_id"))
             body_elements.append(e_block.get("keymr"))
-        self._cached_body_mr = merkle.get_merkle_root(body_elements)
-        return self._cached_body_mr
+        self._cached_mr = merkle.get_merkle_root(body_elements)
+        return self._cached_mr
+
+    def marshal(self):
+        buf = bytearray()
+        buf.extend(factom_core.blocks.AdminBlockHeader.CHAIN_ID)
+        buf.extend(self.admin_block_lookup_hash)
+        buf.extend(factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID)
+        buf.extend(self.entry_credit_block_header_hash)
+        buf.extend(factom_core.blocks.FactoidBlockHeader.CHAIN_ID)
+        buf.extend(self.factoid_block_keymr)
+        for e_block in self.entry_blocks:
+            buf.extend(e_block.get("chain_id"))
+            buf.extend(e_block.get("keymr"))
+        return bytes(buf)
+
+    @classmethod
+    def unmarshal(cls, raw: bytes, block_count: int):
+        body, data = cls.unmarshal_with_remainder(raw, block_count)
+        assert len(data) == 0, "Extra bytes remaining!"
+        return body
+
+    @classmethod
+    def unmarshal_with_remainder(cls, raw: bytes, block_count: int):
+        data = raw
+        admin_block_chain_id, data = data[:32], data[32:]
+        assert admin_block_chain_id == factom_core.blocks.AdminBlockHeader.CHAIN_ID
+        admin_block_lookup_hash, data = data[:32], data[32:]
+        ec_block_chain_id, data = data[:32], data[32:]
+        assert ec_block_chain_id == factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID
+        entry_credit_block_header_hash, data = data[:32], data[32:]
+        factoid_block_chain_id, data = data[:32], data[32:]
+        assert factoid_block_chain_id == factom_core.blocks.FactoidBlockHeader.CHAIN_ID
+        factoid_block_keymr, data = data[:32], data[32:]
+        entry_blocks = []
+        for i in range(block_count - 3):
+            entry_block_chain_id, data = data[:32], data[32:]
+            entry_block_keymr, data = data[:32], data[32:]
+            entry_blocks.append(
+                {"chain_id": entry_block_chain_id, "keymr": entry_block_keymr}
+            )
+        return (
+            DirectoryBlockBody(
+                admin_block_lookup_hash=admin_block_lookup_hash,
+                entry_credit_block_header_hash=entry_credit_block_header_hash,
+                factoid_block_keymr=factoid_block_keymr,
+                entry_blocks=entry_blocks,
+            ),
+            data,
+        )
+
+    def construct_header(
+        self,
+        network_id: bytes,
+        prev_keymr: bytes,
+        prev_full_hash: bytes,
+        timestamp: int,
+        height: int,
+    ) -> DirectoryBlockHeader:
+        return DirectoryBlockHeader(
+            network_id=network_id,
+            body_mr=self.merkle_root,
+            prev_keymr=prev_keymr,
+            prev_full_hash=prev_full_hash,
+            timestamp=timestamp,
+            height=height,
+            block_count=len(self.entry_blocks) + 3,
+        )
+
+
+@dataclass
+class DirectoryBlock:
+
+    header: DirectoryBlockHeader
+    body: DirectoryBlockBody
+
+    _cached_keymr: bytes = None
+
+    def __post_init__(self,):
+        # TODO: assert they're all here\
+        pass
 
     @property
     def keymr(self):
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body_mr)
+        self._cached_keymr = merkle.calculate_keymr(
+            self.header.marshal(), self.body.merkle_root
+        )
         return self._cached_keymr
+
+    @property
+    def full_hash(self):
+        return hashlib.sha256(self.marshal()).digest()
 
     def marshal(self):
         """Marshals the directory block according to the byte-level representation shown at
@@ -114,15 +196,7 @@ class DirectoryBlock:
         """
         buf = bytearray()
         buf.extend(self.header.marshal())
-        buf.extend(factom_core.blocks.AdminBlockHeader.CHAIN_ID)
-        buf.extend(self.admin_block_lookup_hash)
-        buf.extend(factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID)
-        buf.extend(self.entry_credit_block_header_hash)
-        buf.extend(factom_core.blocks.FactoidBlockHeader.CHAIN_ID)
-        buf.extend(self.factoid_block_keymr)
-        for e_block in self.entry_blocks:
-            buf.extend(e_block.get("chain_id"))
-            buf.extend(e_block.get("keymr"))
+        buf.extend(self.body.marshal())
         return bytes(buf)
 
     @classmethod
@@ -146,37 +220,10 @@ class DirectoryBlock:
             raw[DirectoryBlockHeader.LENGTH :],
         )
         header = DirectoryBlockHeader.unmarshal(header_data)
-        # Body
-        admin_block_chain_id, data = data[:32], data[32:]
-        assert admin_block_chain_id == factom_core.blocks.AdminBlockHeader.CHAIN_ID
-        admin_block_lookup_hash, data = data[:32], data[32:]
-        entry_credit_block_chain_id, data = data[:32], data[32:]
-        assert (
-            entry_credit_block_chain_id
-            == factom_core.blocks.EntryCreditBlockHeader.CHAIN_ID
+        body, data = DirectoryBlockBody.unmarshal_with_remainder(
+            data, header.block_count
         )
-        entry_credit_block_header_hash, data = data[:32], data[32:]
-        factoid_block_chain_id, data = data[:32], data[32:]
-        assert factoid_block_chain_id == factom_core.blocks.FactoidBlockHeader.CHAIN_ID
-        factoid_block_keymr, data = data[:32], data[32:]
-        entry_blocks = []
-        for i in range(header.block_count - 3):
-            entry_block_chain_id, data = data[:32], data[32:]
-            entry_block_keymr, data = data[:32], data[32:]
-            entry_blocks.append(
-                {"chain_id": entry_block_chain_id, "keymr": entry_block_keymr}
-            )
-
-        return (
-            DirectoryBlock(
-                header=header,
-                admin_block_lookup_hash=admin_block_lookup_hash,
-                entry_credit_block_header_hash=entry_credit_block_header_hash,
-                factoid_block_keymr=factoid_block_keymr,
-                entry_blocks=entry_blocks,
-            ),
-            data,
-        )
+        return DirectoryBlock(header=header, body=body), data
 
     def to_dict(self):
         return {
@@ -186,15 +233,15 @@ class DirectoryBlock:
             "prev_keymr": self.header.prev_keymr.hex(),
             "prev_full_hash": self.header.prev_full_hash.hex(),
             "height": self.header.height,
-            "admin_block_lookup_hash": self.admin_block_lookup_hash.hex(),
-            "entry_credit_block_header_hash": self.entry_credit_block_header_hash.hex(),
-            "factoid_block_keymr": self.factoid_block_keymr.hex(),
+            "admin_block_lookup_hash": self.body.admin_block_lookup_hash.hex(),
+            "entry_credit_block_header_hash": self.body.entry_credit_block_header_hash.hex(),
+            "factoid_block_keymr": self.body.factoid_block_keymr.hex(),
             "entry_blocks": [
                 {
                     "chain_id": entry_block.get("chain_id").hex(),
                     "keymr": entry_block.get("keymr").hex(),
                 }
-                for entry_block in self.entry_blocks
+                for entry_block in self.body.entry_blocks
             ],
         }
 

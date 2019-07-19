@@ -433,7 +433,7 @@ class TestEntryCreditBlock(unittest.TestCase):
         assert block.header.prev_full_hash.hex() == expected_prev_full_hash
         assert block.header.height == expected_height
 
-        for minute, objects in block.objects.items():
+        for minute, objects in block.body.objects.items():
             for i, o in enumerate(objects):
                 expected_object = expected_objects[minute][i]
                 if isinstance(object, int):
