@@ -1,9 +1,18 @@
 import datetime
 from dataclasses import dataclass, field
-from typing import List, Dict, Union
+from typing import Dict, List, Tuple, Union
 
 import factom_core.block_elements as block_elements
 import factom_core.blocks as blocks
+
+
+FullBlockSet = Tuple[
+    blocks.DirectoryBlock,
+    blocks.AdminBlock,
+    blocks.EntryCreditBlock,
+    blocks.FactoidBlock,
+    List[blocks.EntryBlock],
+]
 
 
 @dataclass
@@ -51,14 +60,11 @@ class PendingBlock:
                 entry.entry_hash
             )
 
-    def seal_blocks(self):
+    def finalize(self) -> FullBlockSet:
         """
         Bundles all added transactions, entries, and other elements into a set of finalized
-        blocks.
-
-        :return:
+        blocks, with headers on each.
         """
-        # Make list of Entry Blocks
         entry_blocks: List[blocks.EntryBlock] = []
         for chain_id, block_body in self.entry_blocks.items():
             header = block_body.construct_header(

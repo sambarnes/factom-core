@@ -1,6 +1,7 @@
 import factom_core.blocks as blocks
 import factom_core.block_elements as block_elements
 import plyvel
+import os
 import struct
 
 DIRECTORY_BLOCK = b"DirectoryBlock;"
@@ -39,19 +40,30 @@ KEY_VALUE_STORE = b"KeyValueStore;"
 
 
 class FactomdLevelDB:
-    def __init__(self, path: str, **kwargs):
+    def __init__(self, path: str = None, **kwargs):
         """
         A wrapper around the legacy factomd level-db
 
         :param path: filepath to the factomd leveldb database, typically in one of the following locations:
-        Mainnet = /home/$USER/.factom/m2/main-database/ldb/LOCAL/factoid_level.db/
-        Custom = /home/$USER/.factom/m2/custom-database/ldb/LOCAL/factoid_level.db/
-        Local = /home/$USER/.factom/m2/local-database/ldb/LOCAL/factoid_level.db/
         """
+        if path is None:
+            home = os.getenv("HOME")
+            path = f"{home}/.factom/hydra/data/"
         self._db = plyvel.DB(path, **kwargs)
 
     def close(self):
         self._db.close()
+
+    def get_full_block_set(self, height: int):
+        pass  # TODO: get_full_block_set()
+
+    def put_full_block_set(self, block_set: blocks.pending_block.FullBlockSet):
+        self.put_directory_block(block_set[0])
+        self.put_admin_block(block_set[1])
+        self.put_entry_credit_block(block_set[2])
+        self.put_factoid_block(block_set[3])
+        for entry_block in block_set[4]:
+            self.put_entry_block(entry_block)
 
     def get_directory_block(self, **kwargs):
         keymr = kwargs.get("keymr")

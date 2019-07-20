@@ -3,7 +3,6 @@
 import click
 import json
 import multiprocessing
-import os
 import requests
 import sys
 import time
@@ -72,7 +71,7 @@ ERROR_NOT_FOUND = '{"error": {"detail": "not found"}}'
 @click.argument("block_id")
 def get_directory_block(connection_type, block_id):
     if connection_type == "db":
-        db = get_db()
+        db = factom_core.db.FactomdLevelDB(create_if_missing=True)
         block = (
             db.get_directory_block(height=int(block_id))
             if len(block_id) < 64
@@ -91,7 +90,7 @@ def get_directory_block(connection_type, block_id):
 @click.argument("block_id")
 def get_admin_block(connection_type, block_id):
     if connection_type == "db":
-        db = get_db()
+        db = factom_core.db.FactomdLevelDB(create_if_missing=True)
         block = (
             db.get_admin_block(height=int(block_id))
             if len(block_id) < 64
@@ -110,7 +109,7 @@ def get_admin_block(connection_type, block_id):
 @click.argument("block_id")
 def get_factoid_block(connection_type, block_id):
     if connection_type == "db":
-        db = get_db()
+        db = factom_core.db.FactomdLevelDB(create_if_missing=True)
         block = (
             db.get_factoid_block(height=int(block_id))
             if len(block_id) < 64
@@ -129,7 +128,7 @@ def get_factoid_block(connection_type, block_id):
 @click.argument("block_id")
 def get_entry_credit_block(connection_type, block_id):
     if connection_type == "db":
-        db = get_db()
+        db = factom_core.db.FactomdLevelDB(create_if_missing=True)
         block = (
             db.get_entry_credit_block(height=int(block_id))
             if len(block_id) < 64
@@ -148,7 +147,7 @@ def get_entry_credit_block(connection_type, block_id):
 @click.argument("keymr")
 def get_entry_block(connection_type, keymr):
     if connection_type == "db":
-        db = get_db()
+        db = factom_core.db.FactomdLevelDB(create_if_missing=True)
         block = db.get_entry_block(keymr=keymr)
         print(json.dumps(block.to_dict()) if block is not None else ERROR_NOT_FOUND)
         return
@@ -163,7 +162,7 @@ def get_entry_block(connection_type, keymr):
 @click.argument("entry_hash")
 def get_entry(connection_type, entry_hash):
     if connection_type == "db":
-        db = get_db()
+        db = factom_core.db.FactomdLevelDB(create_if_missing=True)
         block = db.get_entry(bytes.fromhex(entry_hash))
         print(json.dumps(block.to_dict()) if block is not None else ERROR_NOT_FOUND)
         return
@@ -171,12 +170,6 @@ def get_entry(connection_type, entry_hash):
         f"http://localhost:8000{api_server.RestPaths.ENTRY.value}/{entry_hash}"
     )
     print(r.text)
-
-
-def get_db() -> factom_core.db.FactomdLevelDB:
-    home = os.getenv("HOME")
-    path = f"{home}/.factom/hydra/data/"
-    return factom_core.db.FactomdLevelDB(path, create_if_missing=True)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import bottle
 import json
-import os
 import sys
 import factom_core.messages
 import factom_core.db
@@ -40,7 +39,7 @@ def health_check():
 
 @bottle.get(f"{RestPaths.DIRECTORY_BLOCK.value}/<keymr:re:{hex_regex}>")
 def get_directory_block(keymr: str):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_directory_block(keymr=bytes.fromhex(keymr))
     db.close()
     if block is None:
@@ -50,7 +49,7 @@ def get_directory_block(keymr: str):
 
 @app.get(f"{RestPaths.DIRECTORY_BLOCK.value}/<height:int>")
 def get_directory_block_by_height(height: int):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_directory_block(height=height)
     db.close()
     if block is None:
@@ -60,7 +59,7 @@ def get_directory_block_by_height(height: int):
 
 @bottle.get(f"{RestPaths.ADMIN_BLOCK.value}/<lookup_hash:re:{hex_regex}>")
 def get_admin_block(lookup_hash: str):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_factoid_block(keymr=bytes.fromhex(lookup_hash))
     db.close()
     if block is None:
@@ -70,7 +69,7 @@ def get_admin_block(lookup_hash: str):
 
 @app.get(f"{RestPaths.ADMIN_BLOCK.value}/<height:int>")
 def get_admin_block_by_height(height: int):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_admin_block(height=height)
     db.close()
     if block is None:
@@ -80,7 +79,7 @@ def get_admin_block_by_height(height: int):
 
 @bottle.get(f"{RestPaths.FACTOID_BLOCK.value}/<keymr:re:{hex_regex}>")
 def get_factoid_block(keymr: str):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_factoid_block(keymr=bytes.fromhex(keymr))
     db.close()
     if block is None:
@@ -90,7 +89,7 @@ def get_factoid_block(keymr: str):
 
 @bottle.get(f"{RestPaths.FACTOID_BLOCK.value}/<height:int>")
 def get_factoid_block_by_height(height: int):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_factoid_block(height=height)
     db.close()
     if block is None:
@@ -100,7 +99,7 @@ def get_factoid_block_by_height(height: int):
 
 @bottle.get(f"{RestPaths.ENTRY_CREDIT_BLOCK.value}/<header_hash:re:{hex_regex}>")
 def get_entry_credit_block(header_hash: str):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_entry_credit_block(keymr=bytes.fromhex(header_hash))
     db.close()
     if block is None:
@@ -110,7 +109,7 @@ def get_entry_credit_block(header_hash: str):
 
 @bottle.get(f"{RestPaths.ENTRY_CREDIT_BLOCK.value}/<height:int>")
 def get_entry_credit_block_by_height(height: int):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_entry_credit_block(height=height)
     db.close()
     if block is None:
@@ -120,7 +119,7 @@ def get_entry_credit_block_by_height(height: int):
 
 @bottle.get(f"{RestPaths.ENTRY_BLOCK.value}/<keymr:re:{hex_regex}>")
 def get_entry_block(keymr: str):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     block = db.get_entry_block(keymr=bytes.fromhex(keymr))
     db.close()
     if block is None:
@@ -130,7 +129,7 @@ def get_entry_block(keymr: str):
 
 @bottle.get(f"{RestPaths.ENTRY.value}/<entry_hash:re:{hex_regex}>")
 def get_entry(entry_hash: str):
-    db = get_db()
+    db = factom_core.db.FactomdLevelDB(create_if_missing=True)
     entry = db.get_entry(bytes.fromhex(entry_hash))
     db.close()
     if entry is None:
@@ -150,12 +149,6 @@ def run():
         bottle.run(host="localhost", port=8000, quiet=True)
     except (KeyboardInterrupt, SystemExit):
         sys.exit()
-
-
-def get_db() -> factom_core.db.FactomdLevelDB:
-    home = os.getenv("HOME")
-    path = f"{home}/.factom/hydra/data/"
-    return factom_core.db.FactomdLevelDB(path, create_if_missing=True)
 
 
 if __name__ == "__main__":

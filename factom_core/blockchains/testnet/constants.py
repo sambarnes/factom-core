@@ -1,1 +1,1 @@
-TESTNET_NETWORK_ID = b"\x88>\t;"  # 0x883e093b
+TESTNET_NETWORK_ID = b"\x88\x3e\x09\x3b"  # 0x883e093b
