@@ -66,10 +66,12 @@ class FactomdLevelDB:
         self._db.close()
 
     def get_chain_head(self, chain_id: bytes):
-        return self._db.get(chain_id)
+        sub_db = self._db.prefixed_db(CHAIN_HEAD)
+        return sub_db.get(chain_id)
 
     def put_chain_head(self, chain_id: bytes, head: bytes):
-        self._db.put(chain_id, head)
+        sub_db = self._db.prefixed_db(CHAIN_HEAD)
+        sub_db.put(chain_id, head)
 
     #
     # Directory Block

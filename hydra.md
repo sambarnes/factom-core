@@ -25,12 +25,17 @@ Options:
 
 Commands:
   get-admin-block
+  get-admin-block-head
   get-directory-block
+  get-directory-block-head
   get-entry
   get-entry-block
+  get-entry-block-head
   get-entry-credit-block
+  get-entry-credit-block-head
   get-factoid-block
-  run                     Main entry point for the node
+  get-factoid-block-head
+  run                          Main entry point for the node
 ```
 
 
