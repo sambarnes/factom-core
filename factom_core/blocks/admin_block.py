@@ -200,6 +200,7 @@ class AdminBlock:
     body: AdminBlockBody
 
     _cached_lookup_hash: bytes = None
+    _cached_back_reference_hash: bytes = None
 
     def __post_init__(self):
         # TODO: value assertions
@@ -211,6 +212,13 @@ class AdminBlock:
             return self._cached_lookup_hash
         self._cached_lookup_hash = hashlib.sha256(self.marshal()).digest()
         return self._cached_lookup_hash
+
+    @property
+    def back_reference_hash(self):
+        if self._cached_back_reference_hash is not None:
+            return self._cached_back_reference_hash
+        self._cached_back_reference_hash = hashlib.sha512(self.marshal()).digest()[:256]
+        return self._cached_back_reference_hash
 
     def marshal(self) -> bytes:
         buf = bytearray()

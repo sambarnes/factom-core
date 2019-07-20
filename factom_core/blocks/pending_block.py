@@ -6,15 +6,6 @@ import factom_core.block_elements as block_elements
 import factom_core.blocks as blocks
 
 
-FullBlockSet = Tuple[
-    blocks.DirectoryBlock,
-    blocks.AdminBlock,
-    blocks.EntryCreditBlock,
-    blocks.FactoidBlock,
-    List[blocks.EntryBlock],
-]
-
-
 @dataclass
 class PendingBlock:
 
@@ -59,66 +50,3 @@ class PendingBlock:
             self.entry_blocks[entry.chain_id].entry_hashes[self.current_minute].append(
                 entry.entry_hash
             )
-
-    def finalize(self) -> FullBlockSet:
-        """
-        Bundles all added transactions, entries, and other elements into a set of finalized
-        blocks, with headers on each.
-        """
-        entry_blocks: List[blocks.EntryBlock] = []
-        for chain_id, block_body in self.entry_blocks.items():
-            header = block_body.construct_header(
-                chain_id=chain_id,
-                prev_keymr=bytes(32),  # TODO
-                prev_full_hash=bytes(32),  # TODO
-                sequence=0,  # TODO
-                height=self.height,
-            )
-            entry_blocks.append(blocks.EntryBlock(header, block_body))
-
-        header = self.entry_credit_block.construct_header(
-            prev_header_hash=bytes(32),  # TODO
-            prev_full_hash=bytes(32),  # TODO
-            height=self.height,
-        )
-        entry_credit_block = blocks.EntryCreditBlock(header, self.entry_credit_block)
-
-        header = self.factoid_block.construct_header(
-            prev_keymr=self.previous.body.factoid_block_keymr,
-            prev_ledger_keymr=bytes(32),  # TODO
-            ec_exchange_rate=1000,  # TODO
-            height=self.height,
-        )
-        factoid_block = blocks.FactoidBlock(header, self.factoid_block)
-
-        header = self.admin_block.construct_header(
-            back_reference_hash=bytes(32), height=self.height  # TODO
-        )
-        admin_block = blocks.AdminBlock(header, self.admin_block)
-
-        # Compile all the above blocks and the previous directory block, into a new one
-        directory_block_body = blocks.DirectoryBlockBody(
-            admin_block_lookup_hash=admin_block.lookup_hash,
-            entry_credit_block_header_hash=entry_credit_block.header_hash,
-            factoid_block_keymr=factoid_block.keymr,
-            entry_blocks=[
-                {"chain_id": entry_block.header.chain_id, "keymr": entry_block.keymr}
-                for entry_block in entry_blocks
-            ],
-        )
-        header = directory_block_body.construct_header(
-            network_id=self.previous.header.network_id,
-            prev_keymr=self.previous.keymr,
-            prev_full_hash=self.previous.full_hash,
-            timestamp=self.timestamp,
-            height=self.height,
-        )
-        directory_block = blocks.DirectoryBlock(header, directory_block_body)
-
-        return (
-            directory_block,
-            admin_block,
-            entry_credit_block,
-            factoid_block,
-            entry_blocks,
-        )

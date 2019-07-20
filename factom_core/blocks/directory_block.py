@@ -10,6 +10,10 @@ from factom_core.utils import merkle
 class DirectoryBlockHeader:
     LENGTH = 113
 
+    CHAIN_ID = bytes.fromhex(
+        "000000000000000000000000000000000000000000000000000000000000000d"
+    )
+
     network_id: bytes
     body_mr: bytes
     prev_keymr: bytes

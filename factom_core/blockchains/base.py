@@ -5,15 +5,6 @@ import factom_core.blocks as blocks
 from factom_core.db import FactomdLevelDB
 
 
-FullBlockSet = Tuple[
-    blocks.DirectoryBlock,
-    blocks.AdminBlock,
-    blocks.EntryCreditBlock,
-    blocks.FactoidBlock,
-    List[blocks.EntryBlock],
-]
-
-
 @dataclass
 class BaseBlockchain:
     """The base class for all Blockchain objects"""
@@ -46,7 +37,7 @@ class BaseBlockchain:
     def rotate_vms(self) -> None:
         raise NotImplementedError("Blockchain classes must implement this method")
 
-    def seal_block(self) -> FullBlockSet:
+    def seal_block(self) -> None:
         raise NotImplementedError("Blockchain classes must implement this method")
 
 
@@ -94,7 +85,68 @@ class Blockchain(BaseBlockchain):
     def seal_block(self):
         """
         Bundles all added transactions, entries, and other elements into a set of finalized
-        blocks.
+        blocks with headers.
         """
-        block_set = self.current_block.finalize()
-        self.db.put_full_block_set(block_set)
+        block = self.current_block
+        entry_blocks: List[blocks.EntryBlock] = []
+        for chain_id, block_body in block.entry_blocks.items():
+            prev = self.db.get_entry_block_head(chain_id)
+            header = block_body.construct_header(
+                chain_id=chain_id,
+                prev_keymr=prev.keymr if prev is not None else bytes(32),
+                prev_full_hash=prev.full_hash if prev is not None else bytes(32),
+                sequence=prev.header.sequence + 1 if prev is not None else 0,
+                height=block.height,
+            )
+            entry_blocks.append(blocks.EntryBlock(header, block_body))
+
+        prev = self.db.get_entry_credit_block(height=block.height - 1)
+        header = block.entry_credit_block.construct_header(
+            prev_header_hash=prev.header_hash,
+            prev_full_hash=prev.full_hash,
+            height=block.height,
+        )
+        entry_credit_block = blocks.EntryCreditBlock(header, block.entry_credit_block)
+
+        prev = self.db.get_factoid_block(height=block.height - 1)
+        header = block.factoid_block.construct_header(
+            prev_keymr=block.previous.body.factoid_block_keymr,
+            prev_ledger_keymr=prev.ledger_keymr,
+            ec_exchange_rate=1000,  # TODO
+            height=block.height,
+        )
+        factoid_block = blocks.FactoidBlock(header, block.factoid_block)
+
+        prev = self.db.get_admin_block(height=block.height - 1)
+        header = block.admin_block.construct_header(
+            back_reference_hash=prev.back_reference_hash,
+            height=block.height,
+        )
+        admin_block = blocks.AdminBlock(header, block.admin_block)
+
+        # Compile all the above blocks and the previous directory block, into a new one
+        directory_block_body = blocks.DirectoryBlockBody(
+            admin_block_lookup_hash=admin_block.lookup_hash,
+            entry_credit_block_header_hash=entry_credit_block.header_hash,
+            factoid_block_keymr=factoid_block.keymr,
+            entry_blocks=[
+                {"chain_id": entry_block.header.chain_id, "keymr": entry_block.keymr}
+                for entry_block in entry_blocks
+            ],
+        )
+        header = directory_block_body.construct_header(
+            network_id=block.previous.header.network_id,
+            prev_keymr=block.previous.keymr,
+            prev_full_hash=block.previous.full_hash,
+            timestamp=block.timestamp,
+            height=block.height,
+        )
+        directory_block = blocks.DirectoryBlock(header, directory_block_body)
+
+        # Persist the blocks as new chain heads
+        self.db.put_directory_block_head(directory_block)
+        self.db.put_admin_block_head(admin_block)
+        self.db.put_entry_credit_block_head(entry_credit_block)
+        self.db.put_factoid_block_head(factoid_block)
+        for entry_block in entry_blocks:
+            self.db.put_entry_block_head(entry_block)
