@@ -241,9 +241,8 @@ class FactoidBlock:
             "transaction_count": self.header.tx_count,
             "body_size": self.header.body_size,
             "transactions": {
-                minute: tx.to_dict()
+                minute: [tx.to_dict() for tx in txs]
                 for minute, txs in self.body.transactions.items()
-                for tx in txs
             },
         }
 

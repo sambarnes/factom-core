@@ -134,7 +134,7 @@ class Blockchain(BaseBlockchain):
             ],
         )
         header = directory_block_body.construct_header(
-            network_id=block.previous.header.network_id,
+            network_id=self.network_id,
             prev_keymr=block.previous.keymr,
             prev_full_hash=block.previous.full_hash,
             timestamp=block.timestamp,
