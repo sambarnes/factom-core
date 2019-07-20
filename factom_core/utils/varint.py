@@ -28,6 +28,8 @@ def encode(number: int):
 
 def decode(raw: bytes):
     """Read a varint from `raw` bytes, return the remainder"""
+    if raw is None or len(raw) == 0:
+        return 0
     result = 0
     data = raw
     while True:

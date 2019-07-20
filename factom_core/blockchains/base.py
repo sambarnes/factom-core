@@ -119,8 +119,7 @@ class Blockchain(BaseBlockchain):
 
         prev = self.db.get_admin_block(height=block.height - 1)
         header = block.admin_block.construct_header(
-            back_reference_hash=prev.back_reference_hash,
-            height=block.height,
+            back_reference_hash=prev.back_reference_hash, height=block.height
         )
         admin_block = blocks.AdminBlock(header, block.admin_block)
 

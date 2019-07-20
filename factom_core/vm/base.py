@@ -1,5 +1,3 @@
-
-
 class BaseVM:
     pass
 
