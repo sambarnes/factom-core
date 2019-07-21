@@ -3,6 +3,7 @@
 import click
 import json
 import multiprocessing
+import os
 import requests
 import sys
 import time
@@ -34,7 +35,8 @@ def main():
 
 
 @main.command()
-def run():
+@click.option("--network", "-n")
+def run(network: str):
     """Main entry point for the node"""
     print(HYDRA_HEADER)
 
@@ -44,12 +46,27 @@ def run():
 
     p2p.start()
     api.start()
-    sync_start(inbox)
+    sync_start(network, inbox)
 
 
-def sync_start(inbox: multiprocessing.Queue):
-    blockchain = blockchains.MainnetBlockchain()
-    print(f"Loading From Database at: {blockchain.db.data_path}")
+def sync_start(network: str, inbox: multiprocessing.Queue):
+    home = os.getenv("HOME")
+    if network is None or network == "mainnet":
+        blockchain = blockchains.MainnetBlockchain()
+    elif network == "testnet":
+        data_path = f"{home}/.factom/hydra/data-testnet/"
+        blockchain = blockchains.TestnetBlockchain(data_path)
+    elif network == "localnet":
+        data_path = f"{home}/.factom/hydra/data-localnet/"
+        blockchain = blockchains.LocalBlockchain(data_path)
+    else:
+        data_path = f"{home}/.factom/hydra/data-{network}/"
+        blockchain = blockchains.CustomBlockchain(
+            network_name=network, data_path=data_path
+        )
+
+    print(f"Network: {network}")
+    print(f"Loading From Database at: {blockchain.data_path}")
 
     head = blockchain.db.get_directory_block_head()
     if head is None:

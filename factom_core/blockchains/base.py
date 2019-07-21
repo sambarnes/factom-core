@@ -12,6 +12,7 @@ class BaseBlockchain:
     network_id: bytes = None
     vms: List[Any] = None
 
+    data_path: str = None
     db: FactomdLevelDB = None
     current_block: PendingBlock = None
 
@@ -24,8 +25,8 @@ class BaseBlockchain:
         #     raise ValueError(
         #         "The Blockchain class must be instantiated with a `vms` list of length > 1"
         #     )
-
-        self.db = FactomdLevelDB(data_path=data_path, create_if_missing=True)
+        self.data_path = data_path
+        self.db = FactomdLevelDB(path=data_path, create_if_missing=True)
 
     def load_genesis_block(self) -> blocks.DirectoryBlock:
         raise NotImplementedError("Blockchain classes must implement this method")

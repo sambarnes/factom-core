@@ -51,21 +51,16 @@ FullBlockSet = Tuple[
 
 
 class FactomdLevelDB:
-
-    data_path: str
-
-    def __init__(self, data_path: str = None, **kwargs):
+    def __init__(self, path: str = None, **kwargs):
         """
         A wrapper around the legacy factomd level-db
 
         :param path: filepath to the factomd leveldb database, defaults to: /$HOME/.factom/hydra/data/
         """
-        if data_path is None:
+        if path is None:
             home = os.getenv("HOME")
-            self.data_path = f"{home}/.factom/hydra/data/"
-        else:
-            self.data_path = data_path
-        self._db = plyvel.DB(self.data_path, **kwargs)
+            path = f"{home}/.factom/hydra/data/"
+        self._db = plyvel.DB(path, **kwargs)
 
     def close(self):
         self._db.close()

@@ -56,7 +56,7 @@ class MinuteNumber(AdminMessage):
         return MinuteNumber(minute)
 
     def to_dict(self):
-        return {"minute": self.minute}
+        return {"type": self.ADMIN_ID, "minute": self.minute}
 
 
 @dataclass
@@ -110,6 +110,7 @@ class DirectoryBlockSignature(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "public_key": self.public_key.hex(),
             "signature": self.signature.hex(),
@@ -160,6 +161,7 @@ class MatryoshkaHashReveal(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "matryoshka_hash_reveal": self.matryoshka_hash_reveal.hex(),
         }
@@ -213,6 +215,7 @@ class MatryoshkaHashAddOrReplace(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "new_matryoshka_hash": self.new_matryoshka_hash.hex(),
         }
@@ -254,7 +257,7 @@ class ServerCountIncrease(AdminMessage):
         return ServerCountIncrease(value)
 
     def to_dict(self):
-        return {"value": self.value}
+        return {"type": self.ADMIN_ID, "value": self.value}
 
 
 @dataclass
@@ -295,10 +298,11 @@ class AddFederatedServer(AdminMessage):
         chain_id, data = raw[:32], raw[32:]
         activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         assert len(data) == 0, "Extra bytes remaining!"
-        return AddAuditServer(chain_id, activation_height)
+        return AddFederatedServer(chain_id, activation_height)
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "activation_height": self.activation_height,
         }
@@ -346,6 +350,7 @@ class AddAuditServer(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "activation_height": self.activation_height,
         }
@@ -396,6 +401,7 @@ class RemoveFederatedServer(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "activation_height": self.activation_height,
         }
@@ -460,6 +466,7 @@ class AddFederatedServerSigningKey(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "priority": self.priority,
             "new_public_key": self.new_public_key,
@@ -528,6 +535,7 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "priority": self.priority,
             "hash_type": self.hash_type,
@@ -558,7 +566,7 @@ class CoinbaseDescriptor(AdminMessage):
     ADMIN_ID = 0x0B
     MAX_MESSAGE_SIZE = 10232
 
-    outputs: dict  # the outputs to include in the coinbase transactions 1000 blocks in the future
+    outputs: list  # the outputs to include in the coinbase transactions 1000 blocks in the future
 
     def __post_init__(self):
         for output in self.outputs:
@@ -742,7 +750,11 @@ class AddAuthorityFactoidAddress(AdminMessage):
         return AddAuthorityFactoidAddress(chain_id, fct_address)
 
     def to_dict(self):
-        return {"chain_id": self.chain_id.hex(), "fct_address": self.fct_address}
+        return {
+            "type": self.ADMIN_ID,
+            "chain_id": self.chain_id.hex(),
+            "fct_address": self.fct_address,
+        }
 
 
 @dataclass
@@ -794,6 +806,7 @@ class AddAuthorityEfficiency(AdminMessage):
 
     def to_dict(self):
         return {
+            "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
             "efficiency": self.efficiency_percentage,
         }
