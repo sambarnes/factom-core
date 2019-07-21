@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Union
 
 import factom_core.block_elements as block_elements
 import factom_core.blocks as blocks
@@ -9,10 +9,18 @@ import factom_core.blocks as blocks
 @dataclass
 class PendingBlock:
 
-    admin_block: blocks.AdminBlockBody
-    factoid_block: blocks.FactoidBlockBody
-    entry_credit_block: blocks.EntryCreditBlockBody
-    entry_blocks: Dict[bytes, blocks.EntryBlockBody]
+    admin_block: blocks.AdminBlockBody = field(
+        init=False, default=blocks.AdminBlockBody()
+    )
+    factoid_block: blocks.FactoidBlockBody = field(
+        init=False, default=blocks.FactoidBlockBody()
+    )
+    entry_credit_block: blocks.EntryCreditBlockBody = field(
+        init=False, default=blocks.EntryCreditBlockBody()
+    )
+    entry_blocks: Dict[bytes, blocks.EntryBlockBody] = field(
+        init=False, default_factory=dict
+    )
 
     previous: blocks.DirectoryBlock = None
     current_minute: int = field(init=False, default=0)
@@ -20,8 +28,10 @@ class PendingBlock:
     timestamp: int = int(datetime.datetime.utcnow().timestamp())
 
     def __post_init__(self):
-        if self.previous is not None:
-            self.height = self.previous.header.height + 1
+        if self.previous is None:
+            raise ValueError(
+                "PendingBlock must be instantiated with a previous directory block"
+            )
 
     def add_factoid_transaction(self, tx: block_elements.FactoidTransaction):
         if len(self.factoid_block.transactions.keys()) == 0:

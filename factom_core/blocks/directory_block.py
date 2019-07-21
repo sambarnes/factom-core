@@ -1,6 +1,6 @@
 import hashlib
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import factom_core
 from factom_core.utils import merkle
@@ -18,7 +18,7 @@ class DirectoryBlockHeader:
     body_mr: bytes
     prev_keymr: bytes
     prev_full_hash: bytes
-    timestamp: int
+    timestamp: int  # Note: timestamp in minutes, multiply by 60
     height: int
     block_count: int
 
@@ -71,7 +71,7 @@ class DirectoryBlockBody:
     admin_block_lookup_hash: bytes
     entry_credit_block_header_hash: bytes
     factoid_block_keymr: bytes
-    entry_blocks: list
+    entry_blocks: list = field(default_factory=list)
 
     _cached_mr: bytes = None
 
@@ -236,6 +236,7 @@ class DirectoryBlock:
             "body_mr": self.header.body_mr.hex(),
             "prev_keymr": self.header.prev_keymr.hex(),
             "prev_full_hash": self.header.prev_full_hash.hex(),
+            "timestamp": self.header.timestamp,
             "height": self.header.height,
             "admin_block_lookup_hash": self.body.admin_block_lookup_hash.hex(),
             "entry_credit_block_header_hash": self.body.entry_credit_block_header_hash.hex(),

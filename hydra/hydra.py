@@ -7,6 +7,7 @@ import requests
 import sys
 import time
 
+import factom_core.blockchains as blockchains
 import factom_core.db
 
 import p2p_server
@@ -47,6 +48,17 @@ def run():
 
 
 def sync_start(inbox: multiprocessing.Queue):
+    blockchain = blockchains.MainnetBlockchain()
+    print(f"Loading From Database at: {blockchain.db.data_path}")
+
+    head = blockchain.db.get_directory_block_head()
+    if head is None:
+        print("Database empty, loading genesis block...")
+        head = blockchain.load_genesis_block()
+
+    print(f"Finished loading from database. Current block head:\n{head}")
+    blockchain.current_block = blockchains.PendingBlock(previous=head)
+
     print("Running node...")
     try:
         while True:
@@ -108,7 +120,7 @@ def get_admin_block(connection_type, block_id):
         block = (
             db.get_admin_block(height=int(block_id))
             if len(block_id) < 64
-            else db.get_admin_block(keymr=bytes.fromhex(block_id))
+            else db.get_admin_block(lookup_hash=bytes.fromhex(block_id))
         )
         print(json.dumps(block.to_dict()) if block is not None else ERROR_NOT_FOUND)
         return

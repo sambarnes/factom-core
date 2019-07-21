@@ -1,6 +1,6 @@
 import hashlib
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List
 
 from factom_core.block_elements.factoid_transaction import FactoidTransaction
@@ -84,7 +84,7 @@ class FactoidBlockHeader:
 @dataclass
 class FactoidBlockBody:
 
-    transactions: Dict[int, List[FactoidTransaction]]
+    transactions: Dict[int, List[FactoidTransaction]] = field(default_factory=dict)
     _cached_mr: bytes = None
 
     def __post_init__(self):
@@ -232,6 +232,7 @@ class FactoidBlock:
 
     def to_dict(self):
         return {
+            "keymr": self.keymr.hex(),
             "body_mr": self.header.body_mr.hex(),
             "prev_keymr": self.header.prev_keymr.hex(),
             "prev_ledger_keymr": self.header.prev_ledger_keymr.hex(),

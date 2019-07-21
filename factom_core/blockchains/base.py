@@ -1,32 +1,34 @@
-from dataclasses import dataclass, field, InitVar
-from typing import Any, List, Tuple
+from typing import Any, List
 
 import factom_core.blocks as blocks
 from factom_core.db import FactomdLevelDB
 
+from .pending_block import PendingBlock
 
-@dataclass
+
 class BaseBlockchain:
     """The base class for all Blockchain objects"""
 
     network_id: bytes = None
     vms: List[Any] = None
 
-    data_path: InitVar[str] = None
-    db: FactomdLevelDB = field(init=False, default=None)
-    current_block: blocks.PendingBlock = field(init=False, default=None)
+    db: FactomdLevelDB = None
+    current_block: PendingBlock = None
 
-    def __post_init__(self, data_path) -> None:
+    def __init__(self, data_path: str = None) -> None:
         if not isinstance(self.network_id, bytes) or len(self.network_id) != 4:
             raise ValueError(
                 "The Blockchain class must be instantiated with a `network_id` bytes object of length 4"
             )
-        if not isinstance(self.vms, list) or len(self.network_id) == 0:
-            raise ValueError(
-                "The Blockchain class must be instantiated with a `vms` list of length > 1"
-            )
+        # if not isinstance(self.vms, list) or len(self.vms) == 0:
+        #     raise ValueError(
+        #         "The Blockchain class must be instantiated with a `vms` list of length > 1"
+        #     )
 
-        self.db = FactomdLevelDB(path=data_path, create_if_missing=True)
+        self.db = FactomdLevelDB(data_path=data_path, create_if_missing=True)
+
+    def load_genesis_block(self) -> blocks.DirectoryBlock:
+        raise NotImplementedError("Blockchain classes must implement this method")
 
     def vm_for_hash(self, h: bytes) -> int:
         raise NotImplementedError("Blockchain classes must implement this method")
@@ -41,7 +43,6 @@ class BaseBlockchain:
         raise NotImplementedError("Blockchain classes must implement this method")
 
 
-@dataclass
 class Blockchain(BaseBlockchain):
     """
     A Blockchain is a combination of VM classes. Each VM is associated
@@ -50,8 +51,11 @@ class Blockchain(BaseBlockchain):
     current block / minute number.
     """
 
-    def __post_init__(self, data_path):
-        super().__post_init__(data_path)
+    def __init__(self, data_path: str = None):
+        super().__init__(data_path)
+
+    def load_genesis_block(self) -> blocks.DirectoryBlock:
+        pass
 
     def vm_for_hash(self, h: bytes) -> int:
         """

@@ -1,5 +1,5 @@
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from factom_core.block_elements.admin_messages import *
@@ -69,7 +69,7 @@ class AdminBlockHeader:
 @dataclass
 class AdminBlockBody:
 
-    messages: List[AdminMessage]
+    messages: List[AdminMessage] = field(default_factory=list)
 
     def __post_init__(self):
         # TODO: value assertions
@@ -339,6 +339,7 @@ class AdminBlock:
 
     def to_dict(self):
         return {
+            "lookup_hash": self.lookup_hash.hex(),
             "back_reference_hash": self.header.back_reference_hash.hex(),
             "height": self.header.height,
             "expansion_area": self.header.expansion_area.hex(),

@@ -1,6 +1,6 @@
 import hashlib
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Union
 
 from factom_core.block_elements.balance_increase import BalanceIncrease
@@ -86,7 +86,7 @@ class EntryCreditBlockHeader:
 @dataclass
 class EntryCreditBlockBody:
 
-    objects: Dict[int, List[ECIDTypes]]
+    objects: Dict[int, List[ECIDTypes]] = field(default_factory=dict)
 
     def __post_init__(self):
         # TODO: value assertions
@@ -161,7 +161,7 @@ class EntryCreditBlockBody:
     ) -> EntryCreditBlockHeader:
         object_count = 0
         for object_list in self.objects.values():
-            object_count += len(object_list)
+            object_count += len(object_list) + 1
         marshalled_body = self.marshal()
         return EntryCreditBlockHeader(
             body_hash=hashlib.sha256(marshalled_body).digest(),
@@ -236,6 +236,7 @@ class EntryCreditBlock:
 
     def to_dict(self):
         return {
+            "header_hash": self.header_hash.hex(),
             "body_hash": self.header.body_hash.hex(),
             "prev_header_hash": self.header.prev_header_hash.hex(),
             "prev_full_hash": self.header.prev_full_hash.hex(),

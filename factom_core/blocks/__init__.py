@@ -7,4 +7,3 @@ from .entry_credit_block import (
     EntryCreditBlockHeader,
 )
 from .factoid_block import FactoidBlock, FactoidBlockBody, FactoidBlockHeader
-from .pending_block import PendingBlock
