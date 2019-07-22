@@ -259,6 +259,8 @@ class FactomdLevelDB:
     def get_entry(self, entry_hash: bytes) -> block_elements.Entry:
         sub_db = self._db.prefixed_db(ENTRY)
         chain_id = sub_db.get(entry_hash)
+        if chain_id is None:
+            return None
         raw = self._db.get(chain_id + b";" + entry_hash)
         return None if raw is None else block_elements.Entry.unmarshal(raw)
 

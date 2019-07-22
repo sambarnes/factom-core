@@ -67,10 +67,8 @@ class TestFactoidTransaction(unittest.TestCase):
                 "ec_public_key"
             )
         for n, rcd in enumerate(tx.rcds):
-            assert rcd.get("fct_public_key").hex() == expected_rcds[n].get(
-                "fct_public_key"
-            )
-            assert rcd.get("signature").hex() == expected_rcds[n].get("signature")
+            assert rcd.public_key.hex() == expected_rcds[n].get("fct_public_key")
+            assert rcd.signature.hex() == expected_rcds[n].get("signature")
 
     def test_marshal(self):
         tx_id = "bf5a4700b56c60e2cd2366094901436ee8e78db68768dbc96705bcf26a964d1a"

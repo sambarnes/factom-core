@@ -1,5 +1,7 @@
 import struct
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.utils import varint
 
 
@@ -67,17 +69,11 @@ class DirectoryBlockSignature(AdminMessage):
     MESSAGE_SIZE = 128
 
     chain_id: bytes  # the servers 32 byte identity ChainID
-    public_key: bytes  # a 32 byte Ed25519 public key in that identity
-    signature: bytes  # a 64 byte signature of the previous Directory Block's header
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
-        assert (
-            len(self.public_key) == 32
-        ), "public_key must be a bytes object of length 32"
-        assert (
-            len(self.signature) == 64
-        ), "signature must be a bytes object of length 64"
+        assert self.signature is not None, "signature must not be None"
 
     def marshal(self):
         """
@@ -90,8 +86,7 @@ class DirectoryBlockSignature(AdminMessage):
         """
         buf = bytearray()
         buf.extend(self.chain_id)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -103,17 +98,15 @@ class DirectoryBlockSignature(AdminMessage):
         :return: new DirectoryBlockSignature message object
         """
         chain_id, data = raw[:32], raw[32:]
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         assert len(data) == 0, "Extra bytes remaining!"
-        return DirectoryBlockSignature(chain_id, public_key, signature)
+        return DirectoryBlockSignature(chain_id, signature)
 
     def to_dict(self):
         return {
             "type": self.ADMIN_ID,
             "chain_id": self.chain_id.hex(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }
 
 

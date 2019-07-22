@@ -1,5 +1,7 @@
 import struct
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.messages import Message
 from factom_core.utils import varint
 
@@ -24,8 +26,7 @@ class Ack(Message):
     minute: int
     serial_hash: bytes
     data_area: bytes
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -70,8 +71,7 @@ class Ack(Message):
         buf.extend(self.serial_hash)
         buf.extend(varint.encode(len(self.data_area)))
         buf.extend(self.data_area)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -95,8 +95,7 @@ class Ack(Message):
         data_area, data = data[:data_area_size], data[data_area_size:]
         # TODO: unmarshal the data area in Ack message
 
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
 
         return Ack(
             vm_index=vm_index,
@@ -111,7 +110,6 @@ class Ack(Message):
             minute=minute,
             serial_hash=serial_hash,
             data_area=data_area,
-            public_key=public_key,
             signature=signature,
         )
 
@@ -129,6 +127,5 @@ class Ack(Message):
             "minute": self.minute,
             "serial_hash": self.serial_hash.hex(),
             "data_area": self.data_area.hex(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }

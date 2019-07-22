@@ -1,5 +1,6 @@
+from dataclasses import dataclass, field
+
 import factom_core.messages as messages
-from dataclasses import dataclass
 
 
 @dataclass
@@ -9,6 +10,7 @@ class Message:
     """
 
     TYPE = None  # type: int
+    is_local: bool = field(init=False, default=False)
 
     # __slots__ = [
     #     "origin",  # set and examined on each server (not marshalled)

@@ -2,16 +2,11 @@
 
 import click
 import json
-import multiprocessing
-import os
 import requests
-import sys
-import time
 
-import factom_core.blockchains as blockchains
 import factom_core.db
 
-import p2p_server
+import state_manager
 from rpc import server as api_server
 
 
@@ -39,53 +34,7 @@ def main():
 def run(network: str):
     """Main entry point for the node"""
     print(HYDRA_HEADER)
-
-    inbox = multiprocessing.Queue()
-    p2p = multiprocessing.Process(name="p2p", target=p2p_server.run, args=(inbox,))
-    api = multiprocessing.Process(name="api_server", target=api_server.run)
-
-    p2p.start()
-    api.start()
-    sync_start(network, inbox)
-
-
-def sync_start(network: str, inbox: multiprocessing.Queue):
-    home = os.getenv("HOME")
-    if network is None or network == "mainnet":
-        blockchain = blockchains.MainnetBlockchain()
-    elif network == "testnet":
-        data_path = f"{home}/.factom/hydra/data-testnet/"
-        blockchain = blockchains.TestnetBlockchain(data_path)
-    elif network == "localnet":
-        data_path = f"{home}/.factom/hydra/data-localnet/"
-        blockchain = blockchains.LocalBlockchain(data_path)
-    else:
-        data_path = f"{home}/.factom/hydra/data-{network}/"
-        blockchain = blockchains.CustomBlockchain(
-            network_name=network, data_path=data_path
-        )
-
-    print(f"Network: {network}")
-    print(f"Loading From Database at: {blockchain.data_path}")
-
-    head = blockchain.db.get_directory_block_head()
-    if head is None:
-        print("Database empty, loading genesis block...")
-        head = blockchain.load_genesis_block()
-
-    print(f"Finished loading from database. Current block head:\n{head}")
-    blockchain.current_block = blockchains.PendingBlock(previous=head)
-
-    print("Running node...")
-    try:
-        while True:
-            msg = inbox.get()
-            if msg is None:
-                time.sleep(0.5)
-                continue
-            print(msg.__class__.__name__, msg.to_dict())
-    except (KeyboardInterrupt, SystemExit):
-        sys.exit()
+    state_manager.start(network)
 
 
 # --------------------

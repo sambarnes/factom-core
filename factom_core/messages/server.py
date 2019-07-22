@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.messages import Message
 
 
@@ -13,8 +15,7 @@ class AddServer(Message):
     timestamp: bytes
     chain_id: bytes
     is_federated: bool
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -38,8 +39,7 @@ class AddServer(Message):
         buf.extend(self.timestamp)
         buf.extend(self.chain_id)
         buf.append(0 if self.is_federated else 1)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -51,14 +51,12 @@ class AddServer(Message):
         timestamp, data = data[:6], data[6:]
         chain_id, data = data[:32], data[32:]
         server_type, data = data[0], data[1:]
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         assert len(data) == 0, "Extra bytes remaining!"
         return AddServer(
             timestamp=timestamp,
             chain_id=chain_id,
             is_federated=(server_type == 0),  # 0 == Federated, 1 == Audit
-            public_key=public_key,
             signature=signature,
         )
 
@@ -67,8 +65,7 @@ class AddServer(Message):
             "timestamp": self.timestamp.hex(),
             "chain_id": self.chain_id.hex(),
             "is_federated": self.is_federated,
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }
 
 
@@ -90,8 +87,7 @@ class ChangeServerKey(Message):
     key_type: int
     priority: int
     new_key: bytes
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -120,8 +116,7 @@ class ChangeServerKey(Message):
         buf.append(self.key_type)
         buf.append(self.priority)
         buf.extend(self.new_key)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -136,8 +131,7 @@ class ChangeServerKey(Message):
         key_type, data = data[0], data[1:]
         priority, data = data[0], data[1:]
         new_key, data = data[:32], data[32:]
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         assert len(data) == 0, "Extra bytes remaining!"
         return ChangeServerKey(
             timestamp=timestamp,
@@ -146,7 +140,6 @@ class ChangeServerKey(Message):
             key_type=key_type,
             priority=priority,
             new_key=new_key,
-            public_key=public_key,
             signature=signature,
         )
 
@@ -158,8 +151,7 @@ class ChangeServerKey(Message):
             "key_type": self.key_type,
             "priority": self.priority,
             "new_key": self.new_key.hex(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }
 
 
@@ -174,8 +166,7 @@ class RemoveServer(Message):
     timestamp: bytes
     chain_id: bytes
     is_federated: bool
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -199,8 +190,7 @@ class RemoveServer(Message):
         buf.extend(self.timestamp)
         buf.extend(self.chain_id)
         buf.append(0 if self.is_federated else 1)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -212,14 +202,12 @@ class RemoveServer(Message):
         timestamp, data = data[:6], data[6:]
         chain_id, data = data[:32], data[32:]
         server_type, data = data[0], data[1:]
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         assert len(data) == 0, "Extra bytes remaining!"
         return RemoveServer(
             timestamp=timestamp,
             chain_id=chain_id,
             is_federated=(server_type == 0),  # 0 == Federated, 1 == Audit
-            public_key=public_key,
             signature=signature,
         )
 
@@ -228,6 +216,5 @@ class RemoveServer(Message):
             "timestamp": self.timestamp.hex(),
             "chain_id": self.chain_id.hex(),
             "is_federated": self.is_federated,
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }

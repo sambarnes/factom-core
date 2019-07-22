@@ -1,5 +1,7 @@
 import struct
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.messages import Message
 
 
@@ -16,8 +18,7 @@ class Heartbeat(Message):
     height: int
     directory_block_hash: bytes
     chain_id: bytes
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -44,8 +45,7 @@ class Heartbeat(Message):
         buf.extend(struct.pack(">I", self.secret_number))
         buf.extend(struct.pack(">I", self.height))
         buf.extend(self.chain_id)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -59,8 +59,7 @@ class Heartbeat(Message):
         height, data = struct.unpack(">I", data[:4])[0], data[4:]
         directory_block_hash, data = data[:32], data[32:]
         chain_id, data = data[:32], data[32:]
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
 
         return Heartbeat(
             timestamp=timestamp,
@@ -68,7 +67,6 @@ class Heartbeat(Message):
             height=height,
             directory_block_hash=directory_block_hash,
             chain_id=chain_id,
-            public_key=public_key,
             signature=signature,
         )
 
@@ -79,6 +77,5 @@ class Heartbeat(Message):
             "height": self.height,
             "directory_block_hash": self.directory_block_hash.hex(),
             "chain_id": self.chain_id.hex(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }

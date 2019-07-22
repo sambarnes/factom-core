@@ -1,5 +1,7 @@
-import factom_core.block_elements as block_elements
 from dataclasses import dataclass
+
+import factom_core.block_elements as block_elements
+import factom_core.primitives as primitives
 from factom_core.messages import Message
 
 
@@ -51,8 +53,7 @@ class ChainCommit(Message):
     TYPE = 5
 
     commit: block_elements.ChainCommit
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -71,8 +72,7 @@ class ChainCommit(Message):
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.commit.marshal())
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -87,21 +87,18 @@ class ChainCommit(Message):
             data[commit_size:],
         )
 
-        if (
-            len(data) > 0
-        ):  # TODO: found in factomd code, is this actually not signed sometimes?
-            public_key, data = data[:32], data[32:]
-            signature, data = data[:64], data[64:]
+        # TODO: found in factomd code, is this actually not signed sometimes?
+        if len(data) > 0:
+            signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         else:
-            signature, public_key = b"", b""
+            signature = primitives.FullSignature(b"", b"")
 
-        return ChainCommit(commit=commit, public_key=public_key, signature=signature)
+        return ChainCommit(commit=commit, signature=signature)
 
     def to_dict(self) -> dict:
         return {
             "commit": self.commit.to_dict(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }
 
 
@@ -114,8 +111,7 @@ class EntryCommit(Message):
     TYPE = 6
 
     commit: block_elements.EntryCommit
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -134,8 +130,7 @@ class EntryCommit(Message):
         buf = bytearray()
         buf.append(self.TYPE)
         buf.extend(self.commit.marshal())
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -153,18 +148,16 @@ class EntryCommit(Message):
         if (
             len(data) > 0
         ):  # TODO: found in factomd code, is this actually not signed sometimes?
-            public_key, data = data[:32], data[32:]
-            signature, data = data[:64], data[64:]
+            signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         else:
-            public_key, signature = b"", b""
+            signature = primitives.FullSignature(b"", b"")
 
-        return EntryCommit(commit=commit, public_key=public_key, signature=signature)
+        return EntryCommit(commit=commit, signature=signature)
 
     def to_dict(self) -> dict:
         return {
             "commit": self.commit.to_dict(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }
 
 

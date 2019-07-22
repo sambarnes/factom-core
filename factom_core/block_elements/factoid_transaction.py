@@ -1,5 +1,7 @@
 import hashlib
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.utils import varint
 
 
@@ -10,9 +12,9 @@ class FactoidTransaction:
     inputs: list
     outputs: list
     ec_purchases: list
-    rcds: list
+    rcds: primitives.FullSignatureList
 
-    def __ipost_nit__(self):
+    def __post_init__(self):
         # TODO: assert they're all here
         pass
 
@@ -32,28 +34,28 @@ class FactoidTransaction:
         """Marshals the FactoidTransaction according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
         """
-        data = b"\x02"
-        data += self.timestamp
-        data += bytes([len(self.inputs)])
-        data += bytes([len(self.outputs)])
-        data += bytes([len(self.ec_purchases)])
+        buf = bytearray()
+        buf.append(0x02)
+        buf.extend(self.timestamp)
+        buf.append(len(self.inputs))
+        buf.append(len(self.outputs))
+        buf.append(len(self.ec_purchases))
         for i in self.inputs:
             value = i.get("value")
             fct_address = i.get("fct_address")
-            data += varint.encode(value) + fct_address
+            buf.extend(varint.encode(value) + fct_address)
         for o in self.outputs:
             value = o.get("value")
             fct_address = o.get("fct_address")
-            data += varint.encode(value) + fct_address
+            buf.extend(varint.encode(value) + fct_address)
         for purchase in self.ec_purchases:
             value = purchase.get("value")
             ec_public_key = purchase.get("ec_public_key")
-            data += varint.encode(value) + ec_public_key
+            buf.extend(varint.encode(value) + ec_public_key)
         for rcd in self.rcds:
-            fct_public_key = rcd.get("fct_public_key")
-            signature = rcd.get("signature")
-            data += b"\x01" + fct_public_key + signature
-        return data
+            buf.append(0x01)
+            buf.extend(rcd.marshal())
+        return bytes(buf)
 
     @classmethod
     def unmarshal(cls, raw: bytes):
@@ -97,12 +99,11 @@ class FactoidTransaction:
             ec_public_key, data = data[:32], data[32:]
             ec_purchases.append({"value": value, "ec_public_key": ec_public_key})
 
-        rcds = []
+        rcds = primitives.FullSignatureList()
         for i in range(input_count):
             data = data[1:]  # skip 1 byte version number, always 0x01 for now
-            fct_public_key, data = data[:32], data[32:]
-            signature, data = data[:64], data[64:]
-            rcds.append({"fct_public_key": fct_public_key, "signature": signature})
+            signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
+            rcds.append(signature)
 
         return (
             FactoidTransaction(
@@ -130,13 +131,7 @@ class FactoidTransaction:
                 {"value": r.get("value"), "ec_public_key": r.get("ec_public_key").hex()}
                 for r in self.ec_purchases
             ],
-            "rcds": [
-                {
-                    "fct_public_key": r.get("fct_public_key").hex(),
-                    "signature": r.get("signature").hex(),
-                }
-                for r in self.rcds
-            ],
+            "rcds": [r.to_dict() for r in self.rcds],
         }
 
     def __str__(self):

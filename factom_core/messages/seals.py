@@ -1,5 +1,7 @@
 import struct
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.blocks import DirectoryBlockHeader
 from factom_core.messages import Message
 
@@ -20,8 +22,7 @@ class EndOfMinute(Message):
     system_height: int
     system_hash: bytes
     b: int
-    public_key: bytes
-    signature: bytes
+    signature: primitives.FullSignature
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -55,8 +56,7 @@ class EndOfMinute(Message):
         buf.extend(struct.pack(">I", self.system_height))
         buf.append(self.b)
         if self.b > 0:
-            buf.extend(self.public_key)
-            buf.extend(self.signature)
+            buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -75,10 +75,9 @@ class EndOfMinute(Message):
         system_hash, data = data[:32], data[32:]
         b, data = data[0], data[1:]
         if b > 0:
-            public_key, data = data[:32], data[32:]
-            signature, data = data[:64], data[64:]
+            signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         else:
-            public_key, signature = bytes(32), bytes(64)
+            signature = primitives.FullSignature(bytes(32), bytes(64))
 
         return EndOfMinute(
             timestamp=timestamp,
@@ -90,7 +89,6 @@ class EndOfMinute(Message):
             system_height=system_height,
             system_hash=system_hash,
             b=b,
-            public_key=public_key,
             signature=signature,
         )
 
@@ -105,8 +103,7 @@ class EndOfMinute(Message):
             "system_height": self.system_height,
             "system_hash": self.system_hash.hex(),
             "b": self.b,
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "signature": self.signature.to_dict(),
         }
 
 
@@ -125,10 +122,8 @@ class DirectoryBlockSignature(Message):
     vm_index: int
     header: DirectoryBlockHeader
     chain_id: bytes
-    header_signature_public_key: bytes
-    header_signature: bytes  # over just the dblock header, this goes in the admin block
-    public_key: bytes
-    signature: bytes  # over the message
+    header_signature: primitives.FullSignature  # over just dblock header, goes in the admin block
+    signature: primitives.FullSignature  # over the message
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -162,10 +157,8 @@ class DirectoryBlockSignature(Message):
         buf.append(self.vm_index)
         buf.extend(self.header.marshal())
         buf.extend(self.chain_id)
-        buf.extend(self.header_signature_public_key)
-        buf.extend(self.header_signature)
-        buf.extend(self.public_key)
-        buf.extend(self.signature)
+        buf.extend(self.header_signature.marshal())
+        buf.extend(self.signature.marshal())
         return bytes(buf)
 
     @classmethod
@@ -186,11 +179,8 @@ class DirectoryBlockSignature(Message):
         header = DirectoryBlockHeader.unmarshal(header_data)
         chain_id, data = data[:32], data[32:]
 
-        header_signature_public_key, data = data[:32], data[32:]
-        header_signature, data = data[:64], data[64:]
-
-        public_key, data = data[:32], data[32:]
-        signature, data = data[:64], data[64:]
+        header_signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
+        signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
 
         return DirectoryBlockSignature(
             timestamp=timestamp,
@@ -200,9 +190,7 @@ class DirectoryBlockSignature(Message):
             vm_index=vm_index,
             header=header,
             chain_id=chain_id,
-            header_signature_public_key=header_signature_public_key,
             header_signature=header_signature,
-            public_key=public_key,
             signature=signature,
         )
 
@@ -215,8 +203,6 @@ class DirectoryBlockSignature(Message):
             "vm_index": self.vm_index,
             "header": self.header.__str__(),  # TODO: header to_dict() functions
             "chain_id": self.chain_id.hex(),
-            "header_signature_public_key": self.header_signature_public_key.hex(),
-            "header_signature": self.header_signature.hex(),
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
+            "header_signature": self.header_signature.to_dict(),
+            "signature": self.signature.to_dict(),
         }

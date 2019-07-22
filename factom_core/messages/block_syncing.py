@@ -1,5 +1,7 @@
 import struct
 from dataclasses import dataclass
+
+import factom_core.primitives as primitives
 from factom_core.blocks import (
     DirectoryBlock,
     AdminBlock,
@@ -9,29 +11,6 @@ from factom_core.blocks import (
 )
 from factom_core.block_elements import Entry
 from factom_core.messages import Message
-
-
-class SignatureList(
-    list
-):  # TODO: should this go in a separate module or package? primitives?
-    def marshal(self) -> bytes:
-        buf = bytearray()
-        buf.extend(struct.pack(">I", len(self)))
-        for signature in self:
-            buf.extend(signature.get("public_key"))
-            buf.extend(signature.get("signature"))
-        return bytes(buf)
-
-    @classmethod
-    def unmarshal(cls, raw: bytes):
-        length, data = struct.unpack(">I", raw[:4])[0], raw[4:]
-        signatures = []
-        for i in range(length):
-            public_key, data = data[:32], data[32:]
-            signature, data = data[:64], data[64:]
-            signatures.append({"public_key": public_key, "signature": signature})
-        assert len(data) == 0, "Extra bytes remaining!"
-        return SignatureList(signatures)
 
 
 @dataclass
@@ -49,7 +28,7 @@ class DirectoryBlockState(Message):
     entry_credit_block: EntryCreditBlock
     entry_blocks: list
     entries: list
-    signatures: SignatureList
+    signatures: primitives.FullSignatureList
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -119,7 +98,7 @@ class DirectoryBlockState(Message):
             entry, data = Entry.unmarshal(data[:entry_size]), data[entry_size:]
             entries.append(entry)
 
-        signatures = SignatureList.unmarshal(data)
+        signatures = primitives.FullSignatureList.unmarshal(data)
 
         return DirectoryBlockState(
             timestamp=timestamp,
@@ -141,9 +120,7 @@ class DirectoryBlockState(Message):
             "entry_credit_block": self.entry_credit_block.to_dict(),
             "entry_blocks": [v.to_dict() for v in self.entry_blocks],
             "entries": [v.to_dict() for v in self.entries],
-            "signatures": [
-                {k: v.hex()} for pairs in self.signatures for k, v in pairs.items()
-            ],
+            "signatures": [sig.to_dict() for sig in self.signatures],
         }
 
 
