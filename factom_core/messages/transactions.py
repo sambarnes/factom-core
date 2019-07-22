@@ -96,10 +96,7 @@ class ChainCommit(Message):
         return ChainCommit(commit=commit, signature=signature)
 
     def to_dict(self) -> dict:
-        return {
-            "commit": self.commit.to_dict(),
-            "signature": self.signature.to_dict(),
-        }
+        return {"commit": self.commit.to_dict(), "signature": self.signature.to_dict()}
 
 
 @dataclass
@@ -155,10 +152,7 @@ class EntryCommit(Message):
         return EntryCommit(commit=commit, signature=signature)
 
     def to_dict(self) -> dict:
-        return {
-            "commit": self.commit.to_dict(),
-            "signature": self.signature.to_dict(),
-        }
+        return {"commit": self.commit.to_dict(), "signature": self.signature.to_dict()}
 
 
 @dataclass

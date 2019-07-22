@@ -26,10 +26,7 @@ class FullSignature:
         return FullSignature(public_key=public_key, signature=signature)
 
     def to_dict(self):
-        return {
-            "public_key": self.public_key.hex(),
-            "signature": self.signature.hex(),
-        }
+        return {"public_key": self.public_key.hex(), "signature": self.signature.hex()}
 
 
 class FullSignatureList(list):

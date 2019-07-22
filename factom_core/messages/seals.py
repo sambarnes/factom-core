@@ -179,7 +179,10 @@ class DirectoryBlockSignature(Message):
         header = DirectoryBlockHeader.unmarshal(header_data)
         chain_id, data = data[:32], data[32:]
 
-        header_signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
+        header_signature, data = (
+            primitives.FullSignature.unmarshal(data[:96]),
+            data[96:],
+        )
         signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
 
         return DirectoryBlockSignature(

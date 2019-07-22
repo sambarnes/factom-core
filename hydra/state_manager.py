@@ -15,7 +15,9 @@ inbox = multiprocessing.Queue()
 def start(network: str):
     p2p = multiprocessing.Process(name="p2p", target=p2p_server.run, args=(inbox,))
     api = multiprocessing.Process(name="api_server", target=api_server.run)
-    db_loader = multiprocessing.Process(name="db_loader", target=load_database, args=(network,))
+    db_loader = multiprocessing.Process(
+        name="db_loader", target=load_database, args=(network,)
+    )
 
     p2p.start()
     api.start()
