@@ -130,8 +130,13 @@ class DirectoryBlockState(Message):
             "signatures": [sig.to_dict() for sig in self.signatures],
         }
 
-    def validate(self, state: Blockchain):
-        if None in {self.directory_block, self.admin_block, self.factoid_block, self.entry_credit_block}:
+    def is_sane(self, state: Blockchain):
+        if None in {
+            self.directory_block,
+            self.admin_block,
+            self.factoid_block,
+            self.entry_credit_block,
+        }:
             return False
 
         if self.is_in_database:
@@ -154,10 +159,9 @@ class DirectoryBlockState(Message):
                     return False
         return True
 
-    def validate_signatures(self):
-        pass  # TODO: dbstate.validate_signatures()
+    def is_valid(self):
+        # TODO: dbstate.validate_signatures()
 
-    def validate_data(self):
         # Hash checks for all blocks in Directory Block Body
         body = self.directory_block.body
         if body.admin_block_lookup_hash != self.admin_block.lookup_hash:
