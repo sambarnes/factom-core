@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 import factom_core.messages as messages
+from factom_core.blockchains import Blockchain
 
 
 @dataclass
@@ -38,10 +39,10 @@ class Message:
         if self.TYPE is None:
             raise ValueError("A Message class must be instantiated with a `TYPE`")
 
-    def leader_execute(self):
+    def leader_execute(self, state: Blockchain):
         pass
 
-    def follower_execute(self):
+    def follower_execute(self, state: Blockchain):
         pass
 
     def marshal(self) -> bytes:

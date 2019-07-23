@@ -196,6 +196,12 @@ class DirectoryBlockState(Message):
 
         return True
 
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass
+
 
 @dataclass
 class DirectoryBlockStateRequest(Message):
@@ -253,6 +259,12 @@ class DirectoryBlockStateRequest(Message):
             "block_height_start": self.block_height_start,
             "block_height_end": self.block_height_end,
         }
+
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass
 
 
 @dataclass()

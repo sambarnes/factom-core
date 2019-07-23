@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from factom_core.block_elements import Entry
+from factom_core.blockchains import Blockchain
 from factom_core.blocks import EntryBlock
 from factom_core.messages import Message
 
@@ -51,6 +53,12 @@ class MissingDataRequest(Message):
 
     def __str__(self):
         return "{}(hash={})".format(self.__class__.__name__, self.request_hash)
+
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass
 
 
 @dataclass
@@ -111,3 +119,9 @@ class MissingDataResponse(Message):
             else self.requested_object.keymr
         )
         return f"{self.__class__.__name__}(type={self.requested_object.__class__.__name__}, hash={h})"
+
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass

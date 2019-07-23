@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import factom_core.primitives as primitives
+from factom_core.blockchains import Blockchain
 from factom_core.messages import Message
 
 
@@ -67,6 +68,12 @@ class AddServer(Message):
             "is_federated": self.is_federated,
             "signature": self.signature.to_dict(),
         }
+
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass
 
 
 @dataclass
@@ -154,6 +161,12 @@ class ChangeServerKey(Message):
             "signature": self.signature.to_dict(),
         }
 
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass
+
 
 @dataclass
 class RemoveServer(Message):
@@ -218,3 +231,9 @@ class RemoveServer(Message):
             "is_federated": self.is_federated,
             "signature": self.signature.to_dict(),
         }
+
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass

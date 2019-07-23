@@ -2,6 +2,7 @@ import struct
 from dataclasses import dataclass
 
 import factom_core.primitives as primitives
+from factom_core.blockchains import Blockchain
 from factom_core.blocks import DirectoryBlockHeader
 from factom_core.messages import Message
 
@@ -106,6 +107,12 @@ class EndOfMinute(Message):
             "signature": self.signature.to_dict(),
         }
 
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass
+
 
 @dataclass
 class DirectoryBlockSignature(Message):
@@ -209,3 +216,9 @@ class DirectoryBlockSignature(Message):
             "header_signature": self.header_signature.to_dict(),
             "signature": self.signature.to_dict(),
         }
+
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass

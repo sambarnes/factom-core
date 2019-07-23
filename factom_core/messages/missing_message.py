@@ -1,5 +1,7 @@
 import struct
 from dataclasses import dataclass
+
+from factom_core.blockchains import Blockchain
 from factom_core.messages import Message
 
 
@@ -85,6 +87,12 @@ class MissingMessageRequest(Message):
             "process_list_heights": [v for v in self.process_list_heights],
         }
 
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass
+
 
 @dataclass
 class MissingMessageResponse(Message):
@@ -126,3 +134,9 @@ class MissingMessageResponse(Message):
         # TODO: figure out the rest of this MissingMessageResponse
 
         return MissingMessageResponse(timestamp=timestamp)
+
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import factom_core.block_elements as block_elements
 import factom_core.primitives as primitives
+from factom_core.blockchains import Blockchain
 from factom_core.messages import Message
 
 
@@ -42,6 +43,12 @@ class FactoidTransaction(Message):
 
     def to_dict(self) -> dict:
         return {"tx": self.tx.to_dict()}
+
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass
 
 
 @dataclass
@@ -97,6 +104,12 @@ class ChainCommit(Message):
 
     def to_dict(self) -> dict:
         return {"commit": self.commit.to_dict(), "signature": self.signature.to_dict()}
+
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass
 
 
 @dataclass
@@ -154,6 +167,12 @@ class EntryCommit(Message):
     def to_dict(self) -> dict:
         return {"commit": self.commit.to_dict(), "signature": self.signature.to_dict()}
 
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass
+
 
 @dataclass
 class EntryReveal(Message):
@@ -197,3 +216,9 @@ class EntryReveal(Message):
 
     def to_dict(self) -> dict:
         return {"timestamp": self.timestamp.hex(), "entry": self.entry.to_dict()}
+
+    def leader_execute(self, state: Blockchain):
+        pass
+
+    def follower_execute(self, state: Blockchain):
+        pass

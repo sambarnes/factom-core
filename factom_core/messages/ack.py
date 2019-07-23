@@ -2,6 +2,7 @@ import struct
 from dataclasses import dataclass
 
 import factom_core.primitives as primitives
+from factom_core.blockchains import Blockchain
 from factom_core.messages import Message
 from factom_core.utils import varint
 
@@ -129,3 +130,9 @@ class Ack(Message):
             "data_area": self.data_area.hex(),
             "signature": self.signature.to_dict(),
         }
+
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass

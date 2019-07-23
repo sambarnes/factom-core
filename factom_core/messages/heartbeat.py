@@ -2,6 +2,7 @@ import struct
 from dataclasses import dataclass
 
 import factom_core.primitives as primitives
+from factom_core.blockchains import Blockchain
 from factom_core.messages import Message
 
 
@@ -79,3 +80,9 @@ class Heartbeat(Message):
             "chain_id": self.chain_id.hex(),
             "signature": self.signature.to_dict(),
         }
+
+    def leader_execute(self, state: Blockchain):
+        self.follower_execute(state)
+
+    def follower_execute(self, state: Blockchain):
+        pass
