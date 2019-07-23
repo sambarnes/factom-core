@@ -1,7 +1,10 @@
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
 
+import factom_core.blockchains.mainnet
 import factom_core.primitives as primitives
+from factom_core.blockchains import Blockchain
 from factom_core.blocks import (
     DirectoryBlock,
     AdminBlock,
@@ -26,9 +29,12 @@ class DirectoryBlockState(Message):
     admin_block: AdminBlock
     factoid_block: FactoidBlock
     entry_credit_block: EntryCreditBlock
-    entry_blocks: list
-    entries: list
+    entry_blocks: List[EntryBlock]
+    entries: List[Entry]
     signatures: primitives.FullSignatureList
+
+    # Not marshalled
+    is_in_database: bool = field(init=False, default=False)
 
     def __post_init__(self):
         # TODO: type/value assertions
@@ -43,14 +49,14 @@ class DirectoryBlockState(Message):
         - next bytes are the marshalled Admin Block
         - next bytes are the marshalled Factoid Block
         - next bytes are the marshalled Entry Credit Block
-        - next 4 bytes are the number of Entry Blocks following
+        - next 4 bytes are the number of Entry Blocks following (NOTE: always 0 now)
         - next bytes are the aforementioned marshalled Entry Blocks
         - next 4 bytes are the number of Entries following (NOTE: always 0 now)
         - next bytes are all of the Entries, marshalled as:
             - 4 bytes size of the Entry
             - marshalled Entry itself
         - next bytes are the number of signatures
-        - next bytes are all of the signatures marhsalled as:
+        - next bytes are all of the signatures marshalled as:
             - 64 bytes signature
             - 32 byte public key
 
@@ -68,8 +74,9 @@ class DirectoryBlockState(Message):
             buf.extend(entry_block.marshal())
         buf.extend(struct.pack(">I", len(self.entries)))
         for entry in self.entries:
-            buf.extend(struct.pack(">I", len(entry)))
-            buf.extend(entry.marshal())
+            entry_data = entry.marshal()
+            buf.extend(struct.pack(">I", len(entry_data)))
+            buf.extend(entry_data)
         buf.extend(self.signatures.marshal())
         return bytes(buf)
 
@@ -122,6 +129,68 @@ class DirectoryBlockState(Message):
             "entries": [v.to_dict() for v in self.entries],
             "signatures": [sig.to_dict() for sig in self.signatures],
         }
+
+    def validate(self, state: Blockchain):
+        if None in {self.directory_block, self.admin_block, self.factoid_block, self.entry_credit_block}:
+            return False
+
+        if self.is_in_database:
+            return True
+
+        height = self.directory_block.header.height
+        if height == 0:
+            return True  # Always accept genesis blocks
+        # TODO: if height < state.height_at_boot: return False
+        # TODO: if height < state.highest_saved_block: return False
+
+        if state.network_id != self.directory_block.header.network_id:
+            return False
+
+        if type(state) is factom_core.blockchains.mainnet.MainnetBlockchain:
+            checkpoints = factom_core.blockchains.mainnet.constants.CHECKPOINTS
+            keymr = checkpoints.get(height)
+            if keymr is not None:
+                if self.directory_block.keymr.hex() != keymr:
+                    return False
+        return True
+
+    def validate_signatures(self):
+        pass  # TODO: dbstate.validate_signatures()
+
+    def validate_data(self):
+        # Hash checks for all blocks in Directory Block Body
+        body = self.directory_block.body
+        if body.admin_block_lookup_hash != self.admin_block.lookup_hash:
+            return False
+        if body.factoid_block_keymr != self.factoid_block.keymr:
+            return False
+        if body.entry_credit_block_header_hash != self.entry_credit_block.header_hash:
+            return False
+
+        # Make dict of stuff claimed to be in directory block
+        entry_block_claims = set()
+        entry_claims = set()
+        for entry_block in body.entry_blocks:
+            entry_block_claims.add(entry_block.keymr)
+
+        # Check claims against actual included entry blocks
+        for entry_block in self.entry_blocks:
+            if entry_block.keymr not in entry_block_claims:
+                return False
+            # Add claims from the included entry blocks
+            claims = {
+                entry_hash
+                for hashes in entry_block.body.entry_hashes.values()
+                for entry_hash in hashes
+            }
+            entry_claims.update(claims)
+
+        # Check claims of entry blocks against actual included entries
+        for entry in self.entries:
+            if entry.entry_hash not in entry_claims:
+                return False
+
+        return True
 
 
 @dataclass
