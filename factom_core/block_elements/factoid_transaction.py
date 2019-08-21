@@ -35,6 +35,15 @@ class FactoidTransaction:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
         """
         buf = bytearray()
+        buf.extend(self.marshal_for_signature())
+        for rcd in self.rcds:
+            buf.append(0x01)
+            buf.extend(rcd.marshal())
+        return bytes(buf)
+
+    def marshal_for_signature(self):
+        """Marshals the transaction's header and partial body, in order to be signed by a key"""
+        buf = bytearray()
         buf.append(0x02)
         buf.extend(self.timestamp)
         buf.append(len(self.inputs))
@@ -52,9 +61,6 @@ class FactoidTransaction:
             value = purchase.get("value")
             ec_public_key = purchase.get("ec_public_key")
             buf.extend(varint.encode(value) + ec_public_key)
-        for rcd in self.rcds:
-            buf.append(0x01)
-            buf.extend(rcd.marshal())
         return bytes(buf)
 
     @classmethod

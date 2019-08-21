@@ -19,7 +19,7 @@ deps = {
 
 setup(
     name='factom-core',
-    version='0.0.1',
+    version='0.0.2',
     description='A python library for working with the primitives of the Factom blockchain',
     author="Sam Barnes",
     author_email="mistersamuelbarnes@gmail.com",
@@ -29,7 +29,7 @@ setup(
     py_modules=['factom_core'],
     install_requires=deps['factom-core'],
     zip_safe=False,
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_packages(exclude=["tests", "tests.*", "hydra", "p2p"]),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
