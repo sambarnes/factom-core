@@ -11,32 +11,25 @@ class EntryCommit:
     entry_hash: bytes
     ec_spent: int
     ec_public_key: bytes
-    _signature: bytes = None
+    signature: bytes = None
 
     def __post_init__(self):
         # TODO: assert they're all here
         pass
 
-    @property
-    def signature(self):
-        return self._signature
-
-    @signature.setter
-    def signature(self, signature: bytes):
-        self._signature = signature
+    def set_signature(self, signature: bytes):
+        assert isinstance(signature, bytes)
+        self.signature = signature
 
     def marshal(self):
         """Marshals the EntryCommit according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-commit
         """
         # Fail if signature is not set.
-        assert self._signature is not None
+        assert self.signature is not None
 
         buf = bytearray()
-        buf.append(0x00)
-        buf.extend(self.timestamp)
-        buf.extend(self.entry_hash)
-        buf.append(self.ec_spent)
+        buf.extend(self.marshal_for_signature())
         buf.extend(self.ec_public_key)
         buf.extend(self.signature)
         return bytes(buf)

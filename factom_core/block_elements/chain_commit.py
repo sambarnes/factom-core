@@ -13,16 +13,30 @@ class ChainCommit:
     entry_hash: bytes
     ec_spent: int
     ec_public_key: bytes
-    signature: bytes
+    signature: bytes = None
 
     def __post_init__(self):
         # TODO: value assertions
         pass
 
+    def set_signature(self, signature: bytes):
+        assert isinstance(signature, bytes)
+        self.signature = signature
+
     def marshal(self):
         """Marshals the ChainCommit according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#chain-commit
         """
+        # Fail if signature is not set.
+        assert self.signature
+
+        buf = bytearray()
+        buf.extend(self.marshal_for_signature())
+        buf.extend(self.ec_public_key)
+        buf.extend(self.signature)
+        return bytes(buf)
+
+    def marshal_for_signature(self):
         buf = bytearray()
         buf.append(0x00)
         buf.extend(self.timestamp)
@@ -30,8 +44,6 @@ class ChainCommit:
         buf.extend(self.commit_weld)
         buf.extend(self.entry_hash)
         buf.append(self.ec_spent)
-        buf.extend(self.ec_public_key)
-        buf.extend(self.signature)
         return bytes(buf)
 
     @classmethod
