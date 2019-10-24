@@ -19,16 +19,12 @@ class ChainCommit:
         # TODO: value assertions
         pass
 
-    def set_signature(self, signature: bytes):
-        assert isinstance(signature, bytes)
-        self.signature = signature
-
     def marshal(self):
         """Marshals the ChainCommit according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#chain-commit
         """
         # Fail if signature is not set.
-        assert self.signature
+        assert self.signature is not None
 
         buf = bytearray()
         buf.extend(self.marshal_for_signature())

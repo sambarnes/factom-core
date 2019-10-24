@@ -17,10 +17,6 @@ class EntryCommit:
         # TODO: assert they're all here
         pass
 
-    def set_signature(self, signature: bytes):
-        assert isinstance(signature, bytes)
-        self.signature = signature
-
     def marshal(self):
         """Marshals the EntryCommit according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#entry-commit
