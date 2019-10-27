@@ -19,7 +19,7 @@ deps = {
 
 setup(
     name='factom-core',
-    version='0.0.2',
+    version='0.0.3',
     description='A python library for working with the primitives of the Factom blockchain',
     author="Sam Barnes",
     author_email="mistersamuelbarnes@gmail.com",
