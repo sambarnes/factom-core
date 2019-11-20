@@ -32,7 +32,7 @@ class TestDirectoryBlock(unittest.TestCase):
         expected_body_mr = "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
         expected_prev_keymr = "06a775ece14fb21e14fd3df37c5e51c039789206d9c8402ed9ff9d9ca903ac24"
         expected_prev_full_hash = "6c3390e0d8e4238a431499056bba94cffb56ddad0a3a6c3a559e28bd5671adbf"
-        expected_timestamp = 26033809
+        expected_timestamp = 26033809 * 60
         expected_height = 199460
         expected_admin_block_lookup_hash = "f493fe8bcfb9625c59387f1542e04ed06fd7beaf436daceb79de8651c62d1994"
         expected_entry_credit_block_header_hash = "95dcfe56875b826336c09059d1259401082042cdc99e9b7f41b2b6deadb5e26b"

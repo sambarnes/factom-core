@@ -16,7 +16,7 @@ class DirectoryBlockHeader:
     body_mr: bytes
     prev_keymr: bytes
     prev_full_hash: bytes
-    timestamp: int  # Note: timestamp in minutes, multiply by 60
+    timestamp: int
     height: int
     block_count: int
 
@@ -31,7 +31,7 @@ class DirectoryBlockHeader:
         buf.extend(self.body_mr)
         buf.extend(self.prev_keymr)
         buf.extend(self.prev_full_hash)
-        buf.extend(struct.pack(">I", self.timestamp))
+        buf.extend(struct.pack(">I", int(self.timestamp / 60)))
         buf.extend(struct.pack(">I", self.height))
         buf.extend(struct.pack(">I", self.block_count))
         return bytes(buf)
@@ -46,6 +46,7 @@ class DirectoryBlockHeader:
         prev_keymr, data = data[:32], data[32:]
         prev_full_hash, data = data[:32], data[32:]
         timestamp, data = struct.unpack(">I", data[:4])[0], data[4:]
+        timestamp *= 60  # timestamp in minutes, multiply by 60
         height, data = struct.unpack(">I", data[:4])[0], data[4:]
         block_count, data = struct.unpack(">I", data[:4])[0], data[4:]
         return DirectoryBlockHeader(
