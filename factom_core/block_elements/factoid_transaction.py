@@ -8,7 +8,7 @@ from factom_core.utils import varint
 @dataclass
 class FactoidTransaction:
 
-    timestamp: bytes
+    timestamp: int
     inputs: list
     outputs: list
     ec_purchases: list
@@ -26,6 +26,10 @@ class FactoidTransaction:
     def hash(self):
         return hashlib.sha256(self.marshal()).digest()
 
+    @property
+    def tx_id(self):
+        return hashlib.sha256(self.marshal_for_signature()).digest()
+
     def marshal(self):
         """Marshals the FactoidTransaction according to the byte-level representation shown at
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#factoid-transaction
@@ -41,7 +45,7 @@ class FactoidTransaction:
         """Marshals the transaction's header and partial body, in order to be signed by a key"""
         buf = bytearray()
         buf.append(0x02)
-        buf.extend(self.timestamp)
+        buf.extend(self.timestamp.to_bytes(6, "big", signed=False))
         buf.append(len(self.inputs))
         buf.append(len(self.outputs))
         buf.append(len(self.ec_purchases))
@@ -78,7 +82,7 @@ class FactoidTransaction:
         elsewhere.
         """
         data = raw[1:]  # skip single byte version, probably just 0x02 anyways
-        timestamp, data = data[:6], data[6:]
+        timestamp, data = int.from_bytes(data[:6], "big", signed=False), data[6:]
         input_count, data = ord(data[:1]), data[1:]
         output_count, data = ord(data[:1]), data[1:]
         ec_purchase_count, data = ord(data[:1]), data[1:]
@@ -116,7 +120,8 @@ class FactoidTransaction:
 
     def to_dict(self):
         return {
-            "timestamp": self.timestamp.hex(),
+            "tx_id": self.tx_id.hex(),
+            "timestamp": self.timestamp,
             "inputs": [{"value": r.get("value"), "fct_address": r.get("fct_address").hex()} for r in self.inputs],
             "outputs": [{"value": r.get("value"), "fct_address": r.get("fct_address").hex()} for r in self.outputs],
             "ec_purchases": [
