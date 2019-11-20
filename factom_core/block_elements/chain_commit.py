@@ -54,9 +54,7 @@ class ChainCommit:
         entry_hash, data = data[:32], data[32:]
         ec_spent, data = data[:1], data[1:]
         ec_spent = int.from_bytes(ec_spent, byteorder="big")
-        assert (
-            10 < ec_spent < 21
-        ), "Invalid EC spent!"  # 10 EC for creation + 1 EC per KB up to 10 KB
+        assert 10 < ec_spent < 21, "Invalid EC spent!"  # 10 EC for creation + 1 EC per KB up to 10 KB
         ec_public_key, data = data[:32], data[32:]
         signature, data = data[:64], data[64:]  # covers version through ec spent
         assert len(data) == 0, "Extra bytes remaining!"
@@ -85,8 +83,5 @@ class ChainCommit:
     def __str__(self):
         # TODO: convert timestamp to readable and EC Public Key to its base58 address
         return "{}(timestamp={}, entry_hash={}, ec_public_key={})".format(
-            self.__class__.__name__,
-            self.timestamp,
-            self.entry_hash.hex(),
-            self.ec_public_key.hex(),
+            self.__class__.__name__, self.timestamp, self.entry_hash.hex(), self.ec_public_key.hex(),
         )

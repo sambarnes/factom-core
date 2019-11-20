@@ -73,9 +73,7 @@ class Entry:
         Entry created will not include contextual metadata, such as created_at, entry_block, directory_block, stage, and
         other information inferred from where the entry lies in its chain.
         """
-        data = raw[
-            1:
-        ]  # skip single byte version, probably just gonna be 0x00 for a long time anyways
+        data = raw[1:]  # skip single byte version, probably just gonna be 0x00 for a long time anyways
         chain_id, data = data[:32], data[32:]
         external_ids_size, data = struct.unpack(">h", data[:2])[0], data[2:]
         external_ids = []
@@ -109,12 +107,8 @@ class Entry:
             "external_ids": [e.hex() for e in self.external_ids],
             "content": self.content.hex(),
             # Optional contextual
-            "directory_block_keymr": None
-            if self.directory_block_keymr is None
-            else self.directory_block_keymr.hex(),
-            "entry_block_keymr": None
-            if self.entry_block_keymr is None
-            else self.entry_block_keymr.hex(),
+            "directory_block_keymr": None if self.directory_block_keymr is None else self.directory_block_keymr.hex(),
+            "entry_block_keymr": None if self.entry_block_keymr is None else self.entry_block_keymr.hex(),
             "height": self.height,
             "timestamp": self.timestamp,
             "stage": self.stage,

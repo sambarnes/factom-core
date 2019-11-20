@@ -42,11 +42,7 @@ KEY_VALUE_STORE = b"KeyValueStore;"
 
 
 FullBlockSet = Tuple[
-    blocks.DirectoryBlock,
-    blocks.AdminBlock,
-    blocks.EntryCreditBlock,
-    blocks.FactoidBlock,
-    List[blocks.EntryBlock],
+    blocks.DirectoryBlock, blocks.AdminBlock, blocks.EntryCreditBlock, blocks.FactoidBlock, List[blocks.EntryBlock],
 ]
 
 
@@ -80,9 +76,7 @@ class FactomdLevelDB:
     def get_directory_block(self, **kwargs) -> Union[blocks.DirectoryBlock, None]:
         keymr = kwargs.get("keymr")
         height = kwargs.get("height")
-        assert (keymr is None and type(height) is int) or (
-            type(keymr) is bytes and height is None
-        )
+        assert (keymr is None and type(height) is int) or (type(keymr) is bytes and height is None)
         if height is not None:
             sub_db = self._db.prefixed_db(DIRECTORY_BLOCK_NUMBER)
             height_encoded = struct.pack(">I", height)
@@ -116,9 +110,7 @@ class FactomdLevelDB:
     def get_admin_block(self, **kwargs) -> Union[blocks.AdminBlock, None]:
         lookup_hash = kwargs.get("lookup_hash")
         height = kwargs.get("height")
-        assert (lookup_hash is None and type(height) is int) or (
-            type(lookup_hash) is bytes and height is None
-        )
+        assert (lookup_hash is None and type(height) is int) or (type(lookup_hash) is bytes and height is None)
         if height is not None:
             sub_db = self._db.prefixed_db(ADMIN_BLOCK_NUMBER)
             height_encoded = struct.pack(">I", height)
@@ -155,9 +147,7 @@ class FactomdLevelDB:
     def get_factoid_block(self, **kwargs) -> Union[blocks.FactoidBlock, None]:
         keymr = kwargs.get("keymr")
         height = kwargs.get("height")
-        assert (keymr is None and type(height) is int) or (
-            type(keymr) is bytes and height is None
-        )
+        assert (keymr is None and type(height) is int) or (type(keymr) is bytes and height is None)
         if height is not None:
             sub_db = self._db.prefixed_db(FACTOID_BLOCK_NUMBER)
             height_encoded = struct.pack(">I", height)
@@ -194,9 +184,7 @@ class FactomdLevelDB:
     def get_entry_credit_block(self, **kwargs) -> Union[blocks.EntryCreditBlock, None]:
         header_hash = kwargs.get("header_hash")
         height = kwargs.get("height")
-        assert (header_hash is None and type(height) is int) or (
-            type(header_hash) is bytes and height is None
-        )
+        assert (header_hash is None and type(height) is int) or (type(header_hash) is bytes and height is None)
         if height is not None:
             sub_db = self._db.prefixed_db(ENTRY_CREDIT_BLOCK_NUMBER)
             height_encoded = struct.pack(">I", height)

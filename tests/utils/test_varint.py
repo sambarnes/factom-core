@@ -29,7 +29,5 @@ class TestVarInt(unittest.TestCase):
     def test_decode(self):
         for expected_int, value_varint in TestVarInt.mapping.items():
             observed_int, remainder = varint.decode(value_varint)
-            assert observed_int == expected_int, "{} != {}".format(
-                observed_int, expected_int
-            )
+            assert observed_int == expected_int, "{} != {}".format(observed_int, expected_int)
             assert len(remainder) == 0

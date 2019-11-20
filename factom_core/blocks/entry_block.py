@@ -35,9 +35,7 @@ class EntryBlockHeader:
     @classmethod
     def unmarshal(cls, raw: bytes):
         if len(raw) != EntryBlockHeader.LENGTH:
-            raise ValueError(
-                "`raw` must be exactly {} bytes long".format(EntryBlockHeader.LENGTH)
-            )
+            raise ValueError("`raw` must be exactly {} bytes long".format(EntryBlockHeader.LENGTH))
         chain_id, data = raw[:32], raw[32:]
         body_mr, data = data[:32], data[32:]
         prev_keymr, data = data[:32], data[32:]
@@ -114,12 +112,7 @@ class EntryBlockBody:
         return EntryBlockBody(entry_hashes=entry_hashes), data
 
     def construct_header(
-        self,
-        chain_id: bytes,
-        prev_keymr: bytes,
-        prev_full_hash: bytes,
-        sequence: int,
-        height: int,
+        self, chain_id: bytes, prev_keymr: bytes, prev_full_hash: bytes, sequence: int, height: int,
     ) -> EntryBlockHeader:
         """
         Creates an returns an EntryBlockHeader for this body object, given the specified contextual
@@ -161,9 +154,7 @@ class EntryBlock:
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        self._cached_keymr = merkle.calculate_keymr(
-            self.header.marshal(), self.body.merkle_root
-        )
+        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body.merkle_root)
         return self._cached_keymr
 
     @property
@@ -218,18 +209,11 @@ class EntryBlock:
             "prev_full_hash": self.header.prev_full_hash.hex(),
             "sequence": self.header.sequence,
             "height": self.header.height,
-            "entry_hashes": {
-                minute: [h.hex() for h in hashes]
-                for minute, hashes in self.body.entry_hashes.items()
-            },
+            "entry_hashes": {minute: [h.hex() for h in hashes] for minute, hashes in self.body.entry_hashes.items()},
             # Optional contextual
-            "directory_block_keymr": None
-            if self.directory_block_keymr is None
-            else self.directory_block_keymr.hex(),
+            "directory_block_keymr": None if self.directory_block_keymr is None else self.directory_block_keymr.hex(),
             "timestamp": self.timestamp,
         }
 
     def __str__(self):
-        return "{}(height={}, keymr={})".format(
-            self.__class__.__name__, self.header.height, self.keymr.hex()
-        )
+        return "{}(height={}, keymr={})".format(self.__class__.__name__, self.header.height, self.keymr.hex())

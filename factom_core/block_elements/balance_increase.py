@@ -49,9 +49,7 @@ class BalanceIncrease:
         quantity, data = varint.decode(data)
 
         return (
-            BalanceIncrease(
-                ec_public_key=ec_public_key, tx_id=tx_id, index=index, quantity=quantity
-            ),
+            BalanceIncrease(ec_public_key=ec_public_key, tx_id=tx_id, index=index, quantity=quantity),
             data,
         )
 
@@ -66,8 +64,5 @@ class BalanceIncrease:
     def __str__(self):
         # TODO: convert EC Public Key to its base58 address
         return "{}(tx_id={}, ec_public_key={}, quantity={})".format(
-            self.__class__.__name__,
-            self.tx_id.hex(),
-            self.ec_public_key.hex(),
-            self.quantity,
+            self.__class__.__name__, self.tx_id.hex(), self.ec_public_key.hex(), self.quantity,
         )

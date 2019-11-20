@@ -6,9 +6,7 @@ from factom_core.messages.entry_syncing import MissingDataRequest, MissingDataRe
 
 class TestMissingDataRequest(unittest.TestCase):
 
-    test_data = (
-        "11deadbeef00000000000000000000000000000000000000000000000000000000000000000000"
-    )
+    test_data = "11deadbeef00000000000000000000000000000000000000000000000000000000000000000000"
 
     def test_unmarshal(self):
         msg = MissingDataRequest.unmarshal(bytes.fromhex(self.test_data))
@@ -16,9 +14,7 @@ class TestMissingDataRequest(unittest.TestCase):
         assert msg.request_hash == bytes(32)
 
     def test_marshal(self):
-        msg = MissingDataRequest(
-            timestamp=bytes.fromhex("deadbeef0000"), request_hash=bytes(32)
-        )
+        msg = MissingDataRequest(timestamp=bytes.fromhex("deadbeef0000"), request_hash=bytes(32))
         assert msg.marshal() == bytes.fromhex(self.test_data)
 
 

@@ -48,9 +48,7 @@ class EntryCommit:
         entry_hash, data = data[:32], data[32:]
         ec_spent, data = data[:1], data[1:]
         ec_spent = int.from_bytes(ec_spent, byteorder="big")
-        assert ec_spent < 11, "Invalid EC spent ({}) for entry: {}".format(
-            ec_spent, entry_hash.hex()
-        )
+        assert ec_spent < 11, "Invalid EC spent ({}) for entry: {}".format(ec_spent, entry_hash.hex())
         ec_public_key, data = data[:32], data[32:]
         signature, data = data[:64], data[64:]  # covers version through ec spent
         assert len(data) == 0, "Extra bytes remaining!"
@@ -75,8 +73,5 @@ class EntryCommit:
     def __str__(self):
         # TODO: convert timestamp to readable and EC Public Key to its base58 address
         return "{}(timestamp={}, entry_hash={}, ec_public_key={})".format(
-            self.__class__.__name__,
-            self.timestamp,
-            self.entry_hash.hex(),
-            self.ec_public_key.hex(),
+            self.__class__.__name__, self.timestamp, self.entry_hash.hex(), self.ec_public_key.hex(),
         )

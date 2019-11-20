@@ -20,11 +20,7 @@ class FactoidTransaction:
 
     def is_coinbase(self):
         # TODO: Coinbase outputs be zero too right? Just matters that everything else is definitely zero
-        return (
-            len(self.inputs) == 0
-            and len(self.ec_purchases) == 0
-            and len(self.rcds) == 0
-        )
+        return len(self.inputs) == 0 and len(self.ec_purchases) == 0 and len(self.rcds) == 0
 
     @property
     def hash(self):
@@ -113,11 +109,7 @@ class FactoidTransaction:
 
         return (
             FactoidTransaction(
-                timestamp=timestamp,
-                inputs=inputs,
-                outputs=outputs,
-                ec_purchases=ec_purchases,
-                rcds=rcds,
+                timestamp=timestamp, inputs=inputs, outputs=outputs, ec_purchases=ec_purchases, rcds=rcds,
             ),
             data,
         )
@@ -125,17 +117,10 @@ class FactoidTransaction:
     def to_dict(self):
         return {
             "timestamp": self.timestamp.hex(),
-            "inputs": [
-                {"value": r.get("value"), "fct_address": r.get("fct_address").hex()}
-                for r in self.inputs
-            ],
-            "outputs": [
-                {"value": r.get("value"), "fct_address": r.get("fct_address").hex()}
-                for r in self.outputs
-            ],
+            "inputs": [{"value": r.get("value"), "fct_address": r.get("fct_address").hex()} for r in self.inputs],
+            "outputs": [{"value": r.get("value"), "fct_address": r.get("fct_address").hex()} for r in self.outputs],
             "ec_purchases": [
-                {"value": r.get("value"), "ec_public_key": r.get("ec_public_key").hex()}
-                for r in self.ec_purchases
+                {"value": r.get("value"), "ec_public_key": r.get("ec_public_key").hex()} for r in self.ec_purchases
             ],
             "rcds": [r.to_dict() for r in self.rcds],
         }
@@ -143,9 +128,5 @@ class FactoidTransaction:
     def __str__(self):
         # TODO: convert timestamp to readable
         return "{}(timestamp={}, inputs={}, outputs={}, ec_purchases={})".format(
-            self.__class__.__name__,
-            self.timestamp,
-            len(self.inputs),
-            len(self.outputs),
-            len(self.ec_purchases),
+            self.__class__.__name__, self.timestamp, len(self.inputs), len(self.outputs), len(self.ec_purchases),
         )

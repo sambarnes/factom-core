@@ -22,18 +22,10 @@ class TestEntryBlock(unittest.TestCase):
     )
 
     def test_unmarshal(self):
-        expected_chain_id = (
-            "b312a0401879366b3d72a1844b3ca0da1009545ffa8e4038f80da1528cb572ab"
-        )
-        expected_body_mr = (
-            "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
-        )
-        expected_prev_keymr = (
-            "fdadf8de663a045e4e5927bd71f16718cd036429cc4e64f194116a50fd44adf5"
-        )
-        expected_prev_full_hash = (
-            "4843fa0ca18bff6d6b5c935f18344d1cddeb67f294e1f067aa26a738a92e0cbf"
-        )
+        expected_chain_id = "b312a0401879366b3d72a1844b3ca0da1009545ffa8e4038f80da1528cb572ab"
+        expected_body_mr = "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
+        expected_prev_keymr = "fdadf8de663a045e4e5927bd71f16718cd036429cc4e64f194116a50fd44adf5"
+        expected_prev_full_hash = "4843fa0ca18bff6d6b5c935f18344d1cddeb67f294e1f067aa26a738a92e0cbf"
         expected_sequence = 2807
         expected_height = 199460
         expected_entry_hashes = {
@@ -71,19 +63,11 @@ class TestEntryBlock(unittest.TestCase):
         assert block.marshal().hex() == TestEntryBlock.test_data
 
     def test_keymr(self):
-        expected_keymr = (
-            "09df02abdb74f44ddf1762bf578790219ff012b5786813b51229770a343724d8"
-        )
+        expected_keymr = "09df02abdb74f44ddf1762bf578790219ff012b5786813b51229770a343724d8"
         block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
         assert block.keymr.hex() == expected_keymr
 
     def test_body_mr(self):
-        expected_body_mr = (
-            "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
-        )
+        expected_body_mr = "b787ef87fcb569ce117c1667a0eaadf0797c249e6a1e9a2fca5b039fbf180a73"
         block = EntryBlock.unmarshal(bytes.fromhex(TestEntryBlock.test_data))
-        assert (
-            block.body.merkle_root.hex()
-            == block.header.body_mr.hex()
-            == expected_body_mr
-        )
+        assert block.body.merkle_root.hex() == block.header.body_mr.hex() == expected_body_mr

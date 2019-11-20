@@ -182,11 +182,7 @@ class DirectoryBlockState(Message):
             if entry_block.keymr not in entry_block_claims:
                 return False
             # Add claims from the included entry blocks
-            claims = {
-                entry_hash
-                for hashes in entry_block.body.entry_hashes.values()
-                for entry_hash in hashes
-            }
+            claims = {entry_hash for hashes in entry_block.body.entry_hashes.values() for entry_hash in hashes}
             entry_claims.update(claims)
 
         # Check claims of entry blocks against actual included entries
@@ -248,9 +244,7 @@ class DirectoryBlockStateRequest(Message):
         block_height_end, data = struct.unpack(">I", data[:4])[0], data[4:]
 
         return DirectoryBlockStateRequest(
-            timestamp=timestamp,
-            block_height_start=block_height_start,
-            block_height_end=block_height_end,
+            timestamp=timestamp, block_height_start=block_height_start, block_height_end=block_height_end,
         )
 
     def to_dict(self):

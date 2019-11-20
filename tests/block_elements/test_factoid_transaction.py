@@ -16,25 +16,14 @@ class TestFactoidTransaction(unittest.TestCase):
     )
 
     def test_unmarshal(self):
-        expected_tx_id = (
-            "bf5a4700b56c60e2cd2366094901436ee8e78db68768dbc96705bcf26a964d1a"
-        )
+        expected_tx_id = "bf5a4700b56c60e2cd2366094901436ee8e78db68768dbc96705bcf26a964d1a"
         expected_timestamp = "016bb2d7cd7e"
         expected_inputs = [
-            {
-                "value": 2452435717,
-                "fct_address": "c07d49124e6a6d968a25be00596939e7cb27af821a3119d60e55fd075ab1838e",
-            },
-            {
-                "value": 214500,
-                "fct_address": "330fd717584445ac866dc2facd8b856e63bdb8b15b5ed46c0b053b2c6c5c5c3f",
-            },
+            {"value": 2452435717, "fct_address": "c07d49124e6a6d968a25be00596939e7cb27af821a3119d60e55fd075ab1838e",},
+            {"value": 214500, "fct_address": "330fd717584445ac866dc2facd8b856e63bdb8b15b5ed46c0b053b2c6c5c5c3f",},
         ]
         expected_outputs = [
-            {
-                "value": 2452435717,
-                "fct_address": "330fd717584445ac866dc2facd8b856e63bdb8b15b5ed46c0b053b2c6c5c5c3f",
-            }
+            {"value": 2452435717, "fct_address": "330fd717584445ac866dc2facd8b856e63bdb8b15b5ed46c0b053b2c6c5c5c3f",}
         ]
         expected_ec_purchases = []  # TODO: use a Factoid block with EC purchases too
         expected_rcds = [
@@ -50,9 +39,7 @@ class TestFactoidTransaction(unittest.TestCase):
             },
         ]
 
-        tx = FactoidTransaction.unmarshal(
-            bytes.fromhex(TestFactoidTransaction.test_data)
-        )
+        tx = FactoidTransaction.unmarshal(bytes.fromhex(TestFactoidTransaction.test_data))
         # assert tx.tx_id.hex() == expected_tx_id
         assert tx.timestamp.hex() == expected_timestamp
         for n, i in enumerate(tx.inputs):
@@ -63,16 +50,12 @@ class TestFactoidTransaction(unittest.TestCase):
             assert o.get("fct_address").hex() == expected_outputs[n].get("fct_address")
         for n, purchase in enumerate(tx.ec_purchases):
             assert purchase.get("value") == expected_ec_purchases[n].get("value")
-            assert purchase.get("ec_public_key").hex() == expected_ec_purchases[n].get(
-                "ec_public_key"
-            )
+            assert purchase.get("ec_public_key").hex() == expected_ec_purchases[n].get("ec_public_key")
         for n, rcd in enumerate(tx.rcds):
             assert rcd.public_key.hex() == expected_rcds[n].get("fct_public_key")
             assert rcd.signature.hex() == expected_rcds[n].get("signature")
 
     def test_marshal(self):
         tx_id = "bf5a4700b56c60e2cd2366094901436ee8e78db68768dbc96705bcf26a964d1a"
-        tx = FactoidTransaction.unmarshal(
-            bytes.fromhex(TestFactoidTransaction.test_data)
-        )
+        tx = FactoidTransaction.unmarshal(bytes.fromhex(TestFactoidTransaction.test_data))
         assert tx.marshal().hex() == TestFactoidTransaction.test_data

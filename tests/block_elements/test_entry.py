@@ -30,15 +30,9 @@ class TestEntry(unittest.TestCase):
     )
 
     def test_unmarshal(self):
-        expected_entry_hash = (
-            "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
-        )
-        expected_chain_id = (
-            "b312a0401879366b3d72a1844b3ca0da1009545ffa8e4038f80da1528cb572ab"
-        )
-        expected_external_ids = [
-            "2140840000b4505bbb025bb7a32b2054eeed84a0eda2905e6272b30365abfdcd"
-        ]
+        expected_entry_hash = "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
+        expected_chain_id = "b312a0401879366b3d72a1844b3ca0da1009545ffa8e4038f80da1528cb572ab"
+        expected_external_ids = ["2140840000b4505bbb025bb7a32b2054eeed84a0eda2905e6272b30365abfdcd"]
         expected_content = (
             "7b224f5052436861696e4944223a2244343254395842467559786872434e6e37713336365a46644c6f3173676"
             "d5455625838586b76527a6f353367222c2244626874223a3139393435392c2257696e6e696e6750726576696f"
@@ -76,8 +70,6 @@ class TestEntry(unittest.TestCase):
         assert entry.marshal().hex() == TestEntry.test_data
 
     def test_entry_hash_calculation(self):
-        expected_entry_hash = (
-            "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
-        )
+        expected_entry_hash = "1503d1d8b8d8036ad7cb270321996c0b1f050b4ebaea79ab48d007071cf370f2"
         entry = Entry.unmarshal(bytes.fromhex(TestEntry.test_data))
         assert entry.entry_hash.hex() == expected_entry_hash

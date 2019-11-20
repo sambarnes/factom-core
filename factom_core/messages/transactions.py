@@ -155,9 +155,7 @@ class EntryCommit(Message):
             data[commit_size:],
         )
 
-        if (
-            len(data) > 0
-        ):  # TODO: found in factomd code, is this actually not signed sometimes?
+        if len(data) > 0:  # TODO: found in factomd code, is this actually not signed sometimes?
             signature, data = primitives.FullSignature.unmarshal(data[:96]), data[96:]
         else:
             signature = primitives.FullSignature(b"", b"")

@@ -11,9 +11,7 @@ from .directory_block import DirectoryBlock
 @dataclass
 class FactoidBlockHeader:
 
-    CHAIN_ID = bytes.fromhex(
-        "000000000000000000000000000000000000000000000000000000000000000f"
-    )
+    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000f")
 
     body_mr: bytes
     prev_keymr: bytes
@@ -146,11 +144,7 @@ class FactoidBlockBody:
         return FactoidBlockBody(transactions=transactions), data
 
     def construct_header(
-        self,
-        prev_keymr: bytes,
-        prev_ledger_keymr: bytes,
-        ec_exchange_rate: int,
-        height: int,
+        self, prev_keymr: bytes, prev_ledger_keymr: bytes, ec_exchange_rate: int, height: int,
     ) -> FactoidBlockHeader:
         """
         Seals this factoid block body by constructing and returning it's header
@@ -187,9 +181,7 @@ class FactoidBlock:
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        self._cached_keymr = merkle.calculate_keymr(
-            self.header.marshal(), self.body.merkle_root
-        )
+        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body.merkle_root)
         return self._cached_keymr
 
     @property
@@ -241,13 +233,8 @@ class FactoidBlock:
             "expansion_area": self.header.expansion_area.hex(),
             "transaction_count": self.header.tx_count,
             "body_size": self.header.body_size,
-            "transactions": {
-                minute: [tx.to_dict() for tx in txs]
-                for minute, txs in self.body.transactions.items()
-            },
+            "transactions": {minute: [tx.to_dict() for tx in txs] for minute, txs in self.body.transactions.items()},
         }
 
     def __str__(self):
-        return "{}(height={}, keymr={})".format(
-            self.__class__.__name__, self.header.height, self.keymr.hex()
-        )
+        return "{}(height={}, keymr={})".format(self.__class__.__name__, self.header.height, self.keymr.hex())

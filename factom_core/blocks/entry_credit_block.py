@@ -16,9 +16,7 @@ ECIDTypes = Union[ChainCommit, EntryCommit, int]
 @dataclass
 class EntryCreditBlockHeader:
 
-    CHAIN_ID = bytes.fromhex(
-        "000000000000000000000000000000000000000000000000000000000000000c"
-    )
+    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000c")
 
     body_hash: bytes
     prev_header_hash: bytes
@@ -156,9 +154,7 @@ class EntryCreditBlockBody:
 
         return EntryCreditBlockBody(objects=objects), data
 
-    def construct_header(
-        self, prev_header_hash: bytes, prev_full_hash: bytes, height: int
-    ) -> EntryCreditBlockHeader:
+    def construct_header(self, prev_header_hash: bytes, prev_full_hash: bytes, height: int) -> EntryCreditBlockHeader:
         object_count = 0
         for object_list in self.objects.values():
             object_count += len(object_list) + 1
@@ -226,9 +222,7 @@ class EntryCreditBlock:
     @classmethod
     def unmarshal_with_remainder(cls, raw: bytes):
         header, data = EntryCreditBlockHeader.unmarshal_with_remainder(raw)
-        body, data = EntryCreditBlockBody.unmarshal_with_remainder(
-            data, header.object_count
-        )
+        body, data = EntryCreditBlockBody.unmarshal_with_remainder(data, header.object_count)
         return EntryCreditBlock(header=header, body=body), data
 
     def add_context(self, directory_block: DirectoryBlock):

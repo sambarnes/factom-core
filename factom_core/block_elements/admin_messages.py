@@ -122,9 +122,7 @@ class MatryoshkaHashReveal(AdminMessage):
 
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
-        assert (
-            len(self.matryoshka_hash_reveal) == 32
-        ), "matryoshka_hash_reveal must be a bytes object of length 32"
+        assert len(self.matryoshka_hash_reveal) == 32, "matryoshka_hash_reveal must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -176,9 +174,7 @@ class MatryoshkaHashAddOrReplace(AdminMessage):
 
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
-        assert (
-            len(self.new_matryoshka_hash) == 32
-        ), "new_matryoshka_hash must be a bytes object of length 32"
+        assert len(self.new_matryoshka_hash) == 32, "new_matryoshka_hash must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -418,9 +414,7 @@ class AddFederatedServerSigningKey(AdminMessage):
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
         assert 0 <= self.priority <= 255, "priority must be in range(0, 256)"
-        assert (
-            len(self.new_public_key) == 32
-        ), "new_public_key must be a bytes object of length 32"
+        assert len(self.new_public_key) == 32, "new_public_key must be a bytes object of length 32"
         assert self.activation_height >= 0, "activation_height must not be negative"
 
     def marshal(self):
@@ -453,9 +447,7 @@ class AddFederatedServerSigningKey(AdminMessage):
         new_public_key, data = data[:32], data[32:]
         activation_height, data = struct.unpack(">I", data[:4])[0], data[4:]
         assert len(data) == 0, "Extra bytes remaining!"
-        return AddFederatedServerSigningKey(
-            chain_id, priority, new_public_key, activation_height
-        )
+        return AddFederatedServerSigningKey(chain_id, priority, new_public_key, activation_height)
 
     def to_dict(self):
         return {
@@ -484,13 +476,9 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
 
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
-        assert (
-            self.hash_type == 0 or self.hash_type == 1
-        ), "hash_type must be 0 (p2pkh) or 1 (p2sh)"
+        assert self.hash_type == 0 or self.hash_type == 1, "hash_type must be 0 (p2pkh) or 1 (p2sh)"
         assert 0 <= self.priority <= 255, "priority must be in range(0, 256)"
-        assert (
-            len(self.public_key_hash) == 20
-        ), "public_key_hash must be a bytes object of length 20"
+        assert len(self.public_key_hash) == 20, "public_key_hash must be a bytes object of length 20"
 
     def marshal(self):
         """
@@ -522,9 +510,7 @@ class AddFederatedServerBitcoinAnchorKey(AdminMessage):
         hash_type, data = data[0], data[1:]
         public_key_hash, data = data[:20], data[20:]
         assert len(data) == 0, "Extra bytes remaining!"
-        return AddFederatedServerBitcoinAnchorKey(
-            chain_id, priority, hash_type, public_key_hash
-        )
+        return AddFederatedServerBitcoinAnchorKey(chain_id, priority, hash_type, public_key_hash)
 
     def to_dict(self):
         return {
@@ -567,9 +553,7 @@ class CoinbaseDescriptor(AdminMessage):
                 "value" in output and "fct_address" in output
             ), "Invalid output! Must contain a value and a fct_address"
             value, fct_address = output["value"], output["fct_address"]
-            assert (
-                isinstance(value, int) and value >= 0
-            ), "Invalid output! `value` must be a positive integer"
+            assert isinstance(value, int) and value >= 0, "Invalid output! `value` must be a positive integer"
             assert (
                 isinstance(fct_address, bytes) and len(fct_address) == 32
             ), "Invalid output! fct_address must be a bytes object of length 32"
@@ -710,9 +694,7 @@ class AddAuthorityFactoidAddress(AdminMessage):
 
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
-        assert (
-            len(self.fct_address) == 32
-        ), "fct_address must be a bytes object of length 32"
+        assert len(self.fct_address) == 32, "fct_address must be a bytes object of length 32"
 
     def marshal(self):
         """
@@ -765,9 +747,7 @@ class AddAuthorityEfficiency(AdminMessage):
 
     def __post_init__(self):
         assert len(self.chain_id) == 32, "chain_id must be a bytes object of length 32"
-        assert (
-            0 <= self.efficiency_percentage <= 10000
-        ), "efficiency_percentage must be in range(0, 10000)"
+        assert 0 <= self.efficiency_percentage <= 10000, "efficiency_percentage must be in range(0, 10000)"
         # TODO: is this efficiency assertion right?
 
     def marshal(self):

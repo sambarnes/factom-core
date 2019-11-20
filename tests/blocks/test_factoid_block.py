@@ -31,15 +31,9 @@ class TestFactoidBlock(unittest.TestCase):
     test_data_2 = "000000000000000000000000000000000000000000000000000000000000000f16a82932aa64e6ad45b2749f2abb871fcf3353ab9d4e163c9bd90e5bbd745b59a164ccbb77a21904edc4f2bb753aa60635fb2b60279c06ae01aa211f375417362fb170f73c3961d4218ff806dd75e6e348ca1798a5fc7a99d443fbe2ff939d9900000000000a2be8000000010000000002000000c702014f8a7fcd1b00000002014f8a851657010001e397a1607d4f56c528ab09da5bbf7b37b0b453f43db303730e28e9ebe02657dff431d4f7dfaf840017ef7a21d1a616d65e6b73f3c6a7ad5c49340a6c2592872020ec60767ff00d7d01a5be79b6ada79c0af4d6b7f91234ff321f3b647ed01e02ccbbc0fe9dcc63293482f22455b9756ee4b4db411a5d00e31b689c1bd1abe1d1e887cf4c52e67fc51fe4d9594c24643a91009c6ea91701b5b6df240248c2f39453162b61d71b98270100000000000000000000"
 
     def test_unmarshal(self):
-        expected_body_mr = (
-            "a501d7500373bae88158d5e7062ca178528cc8d405c31f28352a548e5841e9e8"
-        )
-        expected_prev_keymr = (
-            "cecedf84a5851a0cd532657bb3074e4efb46a34c504f2f148fd1c312e284a9ab"
-        )
-        expected_prev_ledger_keymr = (
-            "6d58d473d967e15458ddb9385fdf67ff1969fa7719f907a74e128083734acd2d"
-        )
+        expected_body_mr = "a501d7500373bae88158d5e7062ca178528cc8d405c31f28352a548e5841e9e8"
+        expected_prev_keymr = "cecedf84a5851a0cd532657bb3074e4efb46a34c504f2f148fd1c312e284a9ab"
+        expected_prev_ledger_keymr = "6d58d473d967e15458ddb9385fdf67ff1969fa7719f907a74e128083734acd2d"
         expected_ec_exchange_rate = 16500
         expected_height = 199535
         expected_tx_count = 4
@@ -61,18 +55,12 @@ class TestFactoidBlock(unittest.TestCase):
         assert block.marshal().hex() == TestFactoidBlock.test_data
 
     def test_keymr(self):
-        expected_keymr = (
-            "2568dbcd243487097dedc9764f4fa48079455de4bdb95ed844b99e2f9556bf7f"
-        )
+        expected_keymr = "2568dbcd243487097dedc9764f4fa48079455de4bdb95ed844b99e2f9556bf7f"
         block = FactoidBlock.unmarshal(bytes.fromhex(TestFactoidBlock.test_data))
-        assert block.keymr.hex() == expected_keymr, "{} != {}".format(
-            block.keymr.hex(), expected_keymr
-        )
+        assert block.keymr.hex() == expected_keymr, "{} != {}".format(block.keymr.hex(), expected_keymr)
 
     def test_body_mr(self):
-        expected_body_mr = (
-            "a501d7500373bae88158d5e7062ca178528cc8d405c31f28352a548e5841e9e8"
-        )
+        expected_body_mr = "a501d7500373bae88158d5e7062ca178528cc8d405c31f28352a548e5841e9e8"
         block = FactoidBlock.unmarshal(bytes.fromhex(TestFactoidBlock.test_data))
         assert block.body.merkle_root.hex() == expected_body_mr, "{} != {}".format(
             block.body.merkle_root.hex(), expected_body_mr

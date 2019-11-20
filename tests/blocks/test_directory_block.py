@@ -29,26 +29,14 @@ class TestDirectoryBlock(unittest.TestCase):
 
     def test_unmarshal(self):
         expected_network_id = "fa92e5a2"
-        expected_body_mr = (
-            "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
-        )
-        expected_prev_keymr = (
-            "06a775ece14fb21e14fd3df37c5e51c039789206d9c8402ed9ff9d9ca903ac24"
-        )
-        expected_prev_full_hash = (
-            "6c3390e0d8e4238a431499056bba94cffb56ddad0a3a6c3a559e28bd5671adbf"
-        )
+        expected_body_mr = "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
+        expected_prev_keymr = "06a775ece14fb21e14fd3df37c5e51c039789206d9c8402ed9ff9d9ca903ac24"
+        expected_prev_full_hash = "6c3390e0d8e4238a431499056bba94cffb56ddad0a3a6c3a559e28bd5671adbf"
         expected_timestamp = 26033809
         expected_height = 199460
-        expected_admin_block_lookup_hash = (
-            "f493fe8bcfb9625c59387f1542e04ed06fd7beaf436daceb79de8651c62d1994"
-        )
-        expected_entry_credit_block_header_hash = (
-            "95dcfe56875b826336c09059d1259401082042cdc99e9b7f41b2b6deadb5e26b"
-        )
-        expected_factoid_block_keymr = (
-            "ff57136cc4967ac4e626bc7ab588cb8212863c61f91d3a594fa0cfdbab4e84d7"
-        )
+        expected_admin_block_lookup_hash = "f493fe8bcfb9625c59387f1542e04ed06fd7beaf436daceb79de8651c62d1994"
+        expected_entry_credit_block_header_hash = "95dcfe56875b826336c09059d1259401082042cdc99e9b7f41b2b6deadb5e26b"
+        expected_factoid_block_keymr = "ff57136cc4967ac4e626bc7ab588cb8212863c61f91d3a594fa0cfdbab4e84d7"
         expected_entry_blocks = [
             {
                 "chain_id": "0f47c100669876d0c4692de4d1a4b6f69634da4abce161827d21af79dcddcd6b",
@@ -98,40 +86,25 @@ class TestDirectoryBlock(unittest.TestCase):
         assert block.header.prev_full_hash.hex() == expected_prev_full_hash
         assert block.header.timestamp == expected_timestamp
         assert block.header.height == expected_height
-        assert (
-            block.body.admin_block_lookup_hash.hex() == expected_admin_block_lookup_hash
-        )
-        assert (
-            block.body.entry_credit_block_header_hash.hex()
-            == expected_entry_credit_block_header_hash
-        )
+        assert block.body.admin_block_lookup_hash.hex() == expected_admin_block_lookup_hash
+        assert block.body.entry_credit_block_header_hash.hex() == expected_entry_credit_block_header_hash
         assert block.body.factoid_block_keymr.hex() == expected_factoid_block_keymr
         assert len(block.body.entry_blocks) == len(expected_entry_blocks)
         for i, entry_block in enumerate(block.body.entry_blocks):
-            assert entry_block.get("chain_id").hex() == expected_entry_blocks[i].get(
-                "chain_id"
-            )
-            assert entry_block.get("keymr").hex() == expected_entry_blocks[i].get(
-                "keymr"
-            )
+            assert entry_block.get("chain_id").hex() == expected_entry_blocks[i].get("chain_id")
+            assert entry_block.get("keymr").hex() == expected_entry_blocks[i].get("keymr")
 
     def test_marshal(self):
         block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
         assert block.marshal().hex() == TestDirectoryBlock.test_data
 
     def test_keymr(self):
-        expected_keymr = (
-            "aed3e8a8a3e9515a60eee86e176dc07e503f5a5481a4aad52d344d6f6c8e9613"
-        )
+        expected_keymr = "aed3e8a8a3e9515a60eee86e176dc07e503f5a5481a4aad52d344d6f6c8e9613"
         block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
-        assert block.keymr.hex() == expected_keymr, "{} != {}".format(
-            block.keymr.hex(), expected_keymr
-        )
+        assert block.keymr.hex() == expected_keymr, "{} != {}".format(block.keymr.hex(), expected_keymr)
 
     def test_body_mr(self):
-        expected_body_mr = (
-            "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
-        )
+        expected_body_mr = "68621e0e173b9615f6f154b2a8db4fbe02f8e960bcdf52b380404afa2d2ea96e"
         block = DirectoryBlock.unmarshal(bytes.fromhex(TestDirectoryBlock.test_data))
         assert block.body.merkle_root.hex() == expected_body_mr, "{} != {}".format(
             block.body.merkle_root.hex(), expected_body_mr

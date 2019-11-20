@@ -107,18 +107,10 @@ class TestEntryCreditBlock(unittest.TestCase):
     )
 
     def test_unmarshal(self):
-        block = EntryCreditBlock.unmarshal(
-            bytes.fromhex(TestEntryCreditBlock.test_data)
-        )
-        expected_body_hash = (
-            "2f9d25a35dd9569815262c46d3fde3a7d6589ab110464b01900f37f28c058b1b"
-        )
-        expected_prev_header_hash = (
-            "a42ad12da47374765aab409d70cb30c5938c89160366835d41eccc7cda0374b5"
-        )
-        expected_prev_full_hash = (
-            "b44dca79fb958a5198a74bceaa6faeff6ff7c3b7982ff8b2944a1269b9341a04"
-        )
+        block = EntryCreditBlock.unmarshal(bytes.fromhex(TestEntryCreditBlock.test_data))
+        expected_body_hash = "2f9d25a35dd9569815262c46d3fde3a7d6589ab110464b01900f37f28c058b1b"
+        expected_prev_header_hash = "a42ad12da47374765aab409d70cb30c5938c89160366835d41eccc7cda0374b5"
+        expected_prev_full_hash = "b44dca79fb958a5198a74bceaa6faeff6ff7c3b7982ff8b2944a1269b9341a04"
         expected_height = 199460
         expected_objects = {
             1: [],
@@ -460,18 +452,12 @@ class TestEntryCreditBlock(unittest.TestCase):
                     # TODO: have a test case that checks balance increase ECID
 
     def test_marshal(self):
-        block = EntryCreditBlock.unmarshal(
-            bytes.fromhex(TestEntryCreditBlock.test_data)
-        )
+        block = EntryCreditBlock.unmarshal(bytes.fromhex(TestEntryCreditBlock.test_data))
         assert block.marshal().hex() == TestEntryCreditBlock.test_data
 
     def test_header_hash(self):
-        expected_header_hash = (
-            "95dcfe56875b826336c09059d1259401082042cdc99e9b7f41b2b6deadb5e26b"
-        )
-        block = EntryCreditBlock.unmarshal(
-            bytes.fromhex(TestEntryCreditBlock.test_data)
-        )
+        expected_header_hash = "95dcfe56875b826336c09059d1259401082042cdc99e9b7f41b2b6deadb5e26b"
+        block = EntryCreditBlock.unmarshal(bytes.fromhex(TestEntryCreditBlock.test_data))
         assert block.header_hash.hex() == expected_header_hash, "{} != {}".format(
             block.lookup_hash.hex(), expected_header_hash
         )

@@ -10,9 +10,7 @@ from factom_core.utils import merkle
 class DirectoryBlockHeader:
     LENGTH = 113
 
-    CHAIN_ID = bytes.fromhex(
-        "000000000000000000000000000000000000000000000000000000000000000d"
-    )
+    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000d")
 
     network_id: bytes
     body_mr: bytes
@@ -41,11 +39,7 @@ class DirectoryBlockHeader:
     @classmethod
     def unmarshal(cls, raw: bytes):
         if len(raw) != DirectoryBlockHeader.LENGTH:
-            raise ValueError(
-                "`raw` must be exactly {} bytes long".format(
-                    DirectoryBlockHeader.LENGTH
-                )
-            )
+            raise ValueError("`raw` must be exactly {} bytes long".format(DirectoryBlockHeader.LENGTH))
         data = raw[1:]  # skip single byte version
         network_id, data = data[:4], data[4:]
         body_mr, data = data[:32], data[32:]
@@ -133,9 +127,7 @@ class DirectoryBlockBody:
         for i in range(block_count - 3):
             entry_block_chain_id, data = data[:32], data[32:]
             entry_block_keymr, data = data[:32], data[32:]
-            entry_blocks.append(
-                {"chain_id": entry_block_chain_id, "keymr": entry_block_keymr}
-            )
+            entry_blocks.append({"chain_id": entry_block_chain_id, "keymr": entry_block_keymr})
         return (
             DirectoryBlockBody(
                 admin_block_lookup_hash=admin_block_lookup_hash,
@@ -147,12 +139,7 @@ class DirectoryBlockBody:
         )
 
     def construct_header(
-        self,
-        network_id: bytes,
-        prev_keymr: bytes,
-        prev_full_hash: bytes,
-        timestamp: int,
-        height: int,
+        self, network_id: bytes, prev_keymr: bytes, prev_full_hash: bytes, timestamp: int, height: int,
     ) -> DirectoryBlockHeader:
         return DirectoryBlockHeader(
             network_id=network_id,
@@ -182,9 +169,7 @@ class DirectoryBlock:
         if self._cached_keymr is not None:
             return self._cached_keymr
 
-        self._cached_keymr = merkle.calculate_keymr(
-            self.header.marshal(), self.body.merkle_root
-        )
+        self._cached_keymr = merkle.calculate_keymr(self.header.marshal(), self.body.merkle_root)
         return self._cached_keymr
 
     @property
@@ -224,9 +209,7 @@ class DirectoryBlock:
             raw[DirectoryBlockHeader.LENGTH :],
         )
         header = DirectoryBlockHeader.unmarshal(header_data)
-        body, data = DirectoryBlockBody.unmarshal_with_remainder(
-            data, header.block_count
-        )
+        body, data = DirectoryBlockBody.unmarshal_with_remainder(data, header.block_count)
         return DirectoryBlock(header=header, body=body), data
 
     def to_dict(self):
@@ -242,15 +225,10 @@ class DirectoryBlock:
             "entry_credit_block_header_hash": self.body.entry_credit_block_header_hash.hex(),
             "factoid_block_keymr": self.body.factoid_block_keymr.hex(),
             "entry_blocks": [
-                {
-                    "chain_id": entry_block.get("chain_id").hex(),
-                    "keymr": entry_block.get("keymr").hex(),
-                }
+                {"chain_id": entry_block.get("chain_id").hex(), "keymr": entry_block.get("keymr").hex(),}
                 for entry_block in self.body.entry_blocks
             ],
         }
 
     def __str__(self):
-        return "{}(height={}, keymr={})".format(
-            self.__class__.__name__, self.header.height, self.keymr.hex()
-        )
+        return "{}(height={}, keymr={})".format(self.__class__.__name__, self.header.height, self.keymr.hex())

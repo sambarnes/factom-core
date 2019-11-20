@@ -15,9 +15,7 @@ class TestMainnetDatabase(unittest.TestCase):
         if admin_block.lookup_hash != directory_block.admin_block_lookup_hash:
             print(
                 "Admin Block Lookup Hash in DBlock {} != Admin Block Lookup Hash at that height: {} != {}".format(
-                    height,
-                    directory_block.admin_block_lookup_hash.hex(),
-                    admin_block.lookup_hash.hex(),
+                    height, directory_block.admin_block_lookup_hash.hex(), admin_block.lookup_hash.hex(),
                 )
             )
 
@@ -25,24 +23,17 @@ class TestMainnetDatabase(unittest.TestCase):
         if factoid_block.keymr != directory_block.factoid_block_keymr:
             print(
                 "Factoid KeyMR in DBlock {} != Factoid Block KeyMR at that height: {} != {}".format(
-                    height,
-                    directory_block.factoid_block_keymr.hex(),
-                    factoid_block.keymr.hex(),
+                    height, directory_block.factoid_block_keymr.hex(), factoid_block.keymr.hex(),
                 )
             )
 
         entry_credit_block = db.get_entry_credit_block(height=height)
         if entry_credit_block is None:
             print("EC Block does not exist for DBlock {}".format(height))
-        elif (
-            entry_credit_block.header_hash
-            != directory_block.entry_credit_block_header_hash
-        ):
+        elif entry_credit_block.header_hash != directory_block.entry_credit_block_header_hash:
             print(
                 "EC Block Header Hash in DBlock {} != EC Block Header Hash at that height: {} != {}".format(
-                    height,
-                    directory_block.entry_credit_block_header_hash.hex(),
-                    entry_credit_block.header_hash.hex(),
+                    height, directory_block.entry_credit_block_header_hash.hex(), entry_credit_block.header_hash.hex(),
                 )
             )
 
@@ -63,9 +54,7 @@ class TestMainnetDatabase(unittest.TestCase):
 
     def test_all_blocks(self):
         home = os.getenv("HOME")
-        path = "{home}/.factom/m2/main-database/ldb/MAIN/factoid_level.db/".format(
-            home=home
-        )
+        path = "{home}/.factom/m2/main-database/ldb/MAIN/factoid_level.db/".format(home=home)
         level_db = FactomdLevelDB(path)
         height = 0
         while True:
@@ -81,9 +70,7 @@ class TestMainnetDatabase(unittest.TestCase):
 
     def test_single_block(self):
         home = os.getenv("HOME")
-        path = "{home}/.factom/m2/main-database/ldb/MAIN/factoid_level.db/".format(
-            home=home
-        )
+        path = "{home}/.factom/m2/main-database/ldb/MAIN/factoid_level.db/".format(home=home)
         level_db = FactomdLevelDB(path)
         height = 91949
         result = None

@@ -18,9 +18,7 @@ class BaseBlockchain:
 
     def __init__(self, data_path: str = None) -> None:
         if not isinstance(self.network_id, bytes) or len(self.network_id) != 4:
-            raise ValueError(
-                "The Blockchain class must be instantiated with a `network_id` bytes object of length 4"
-            )
+            raise ValueError("The Blockchain class must be instantiated with a `network_id` bytes object of length 4")
         # if not isinstance(self.vms, list) or len(self.vms) == 0:
         #     raise ValueError(
         #         "The Blockchain class must be instantiated with a `vms` list of length > 1"
@@ -107,9 +105,7 @@ class Blockchain(BaseBlockchain):
 
         prev = self.db.get_entry_credit_block(height=block.height - 1)
         header = block.entry_credit_block.construct_header(
-            prev_header_hash=prev.header_hash,
-            prev_full_hash=prev.full_hash,
-            height=block.height,
+            prev_header_hash=prev.header_hash, prev_full_hash=prev.full_hash, height=block.height,
         )
         entry_credit_block = blocks.EntryCreditBlock(header, block.entry_credit_block)
 
@@ -123,9 +119,7 @@ class Blockchain(BaseBlockchain):
         factoid_block = blocks.FactoidBlock(header, block.factoid_block)
 
         prev = self.db.get_admin_block(height=block.height - 1)
-        header = block.admin_block.construct_header(
-            back_reference_hash=prev.back_reference_hash, height=block.height
-        )
+        header = block.admin_block.construct_header(back_reference_hash=prev.back_reference_hash, height=block.height)
         admin_block = blocks.AdminBlock(header, block.admin_block)
 
         # Compile all the above blocks and the previous directory block, into a new one
@@ -134,8 +128,7 @@ class Blockchain(BaseBlockchain):
             entry_credit_block_header_hash=entry_credit_block.header_hash,
             factoid_block_keymr=factoid_block.keymr,
             entry_blocks=[
-                {"chain_id": entry_block.header.chain_id, "keymr": entry_block.keymr}
-                for entry_block in entry_blocks
+                {"chain_id": entry_block.header.chain_id, "keymr": entry_block.keymr} for entry_block in entry_blocks
             ],
         )
         header = directory_block_body.construct_header(
