@@ -97,15 +97,13 @@ class TestAdminBlock(unittest.TestCase):
     )
 
     def test_unmarshal(self):
-        expected_back_reference_hash = (
-            "4a994fbc66747f91e28576e715de510bb12937ee68885ffc0a70ad3b03b37560"
-        )
+        expected_prev_back_reference_hash = "4a994fbc66747f91e28576e715de510bb12937ee68885ffc0a70ad3b03b37560"
         expected_height = 70417
         expected_header_expansion_area = ""
         expected_message_count = 73
 
         block = AdminBlock.unmarshal(bytes.fromhex(TestAdminBlock.test_data))
-        assert block.header.back_reference_hash.hex() == expected_back_reference_hash
+        assert block.header.prev_back_reference_hash.hex() == expected_prev_back_reference_hash
         assert block.header.height == expected_height
         assert block.header.expansion_area.hex() == expected_header_expansion_area
         assert block.header.message_count == expected_message_count
@@ -116,9 +114,7 @@ class TestAdminBlock(unittest.TestCase):
         assert block.marshal().hex() == TestAdminBlock.test_data
 
     def test_lookup_hash(self):
-        expected_lookup_hash = (
-            "748a13e79aa35130ea193141ee7849b5cc7ffcceb1aa77d58cb62c129170ca79"
-        )
+        expected_lookup_hash = "748a13e79aa35130ea193141ee7849b5cc7ffcceb1aa77d58cb62c129170ca79"
         block = AdminBlock.unmarshal(bytes.fromhex(TestAdminBlock.test_data))
         assert block.lookup_hash.hex() == expected_lookup_hash, "{} != {}".format(
             block.lookup_hash.hex(), expected_lookup_hash

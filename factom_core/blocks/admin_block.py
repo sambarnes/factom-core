@@ -10,11 +10,9 @@ from .directory_block import DirectoryBlock
 @dataclass
 class AdminBlockHeader:
 
-    CHAIN_ID = bytes.fromhex(
-        "000000000000000000000000000000000000000000000000000000000000000a"
-    )
+    CHAIN_ID = bytes.fromhex("000000000000000000000000000000000000000000000000000000000000000a")
 
-    back_reference_hash: bytes
+    prev_back_reference_hash: bytes
     height: int
     expansion_area: bytes
     message_count: int
@@ -27,7 +25,7 @@ class AdminBlockHeader:
     def marshal(self) -> bytes:
         buf = bytearray()
         buf.extend(AdminBlockHeader.CHAIN_ID)
-        buf.extend(self.back_reference_hash)
+        buf.extend(self.prev_back_reference_hash)
         buf.extend(struct.pack(">I", self.height))
         buf.extend(varint.encode(len(self.expansion_area)))
         buf.extend(self.expansion_area)
@@ -45,7 +43,7 @@ class AdminBlockHeader:
     def unmarshal_with_remainder(cls, raw: bytes):
         chain_id, data = raw[:32], raw[32:]
         assert chain_id == AdminBlockHeader.CHAIN_ID
-        back_reference_hash, data = data[:32], data[32:]
+        prev_back_reference_hash, data = data[:32], data[32:]
         height, data = struct.unpack(">I", data[:4])[0], data[4:]
 
         expansion_size, data = varint.decode(data)
@@ -56,7 +54,7 @@ class AdminBlockHeader:
         body_size, data = struct.unpack(">I", data[:4])[0], data[4:]
         return (
             AdminBlockHeader(
-                back_reference_hash=back_reference_hash,
+                prev_back_reference_hash=prev_back_reference_hash,
                 height=height,
                 expansion_area=expansion_area,
                 message_count=message_count,
@@ -178,9 +176,7 @@ class AdminBlockBody:
 
         return AdminBlockBody(messages=messages), data
 
-    def construct_header(
-        self, back_reference_hash: bytes, height: int
-    ) -> AdminBlockHeader:
+    def construct_header(self, back_reference_hash: bytes, height: int) -> AdminBlockHeader:
         """
         Seals the admin block by constructing and returning its header
         """
@@ -217,7 +213,7 @@ class AdminBlock:
     def back_reference_hash(self):
         if self._cached_back_reference_hash is not None:
             return self._cached_back_reference_hash
-        self._cached_back_reference_hash = hashlib.sha512(self.marshal()).digest()[:256]
+        self._cached_back_reference_hash = hashlib.sha512(self.marshal()).digest()[:32]
         return self._cached_back_reference_hash
 
     def marshal(self) -> bytes:
@@ -318,18 +314,12 @@ class AdminBlock:
 
             elif admin_id <= 0x0E:
                 msg = admin_id
-                print(
-                    "Unsupported admin message type {} found at Admin Block {}".format(
-                        admin_id, header.height
-                    )
-                )
+                print("Unsupported admin message type {} found at Admin Block {}".format(admin_id, header.height))
 
             if msg is not None:
                 messages.append(msg)
 
-        assert (
-            len(messages) == header.message_count
-        ), "Unexpected message count at Admin Block {}".format(header.height)
+        assert len(messages) == header.message_count, "Unexpected message count at Admin Block {}".format(header.height)
 
         body = AdminBlockBody(messages=messages)
         return AdminBlock(header=header, body=body), data
@@ -340,7 +330,7 @@ class AdminBlock:
     def to_dict(self):
         return {
             "lookup_hash": self.lookup_hash.hex(),
-            "back_reference_hash": self.header.back_reference_hash.hex(),
+            "back_reference_hash": self.header.prev_back_reference_hash.hex(),
             "height": self.header.height,
             "expansion_area": self.header.expansion_area.hex(),
             "message_count": self.header.message_count,
@@ -349,6 +339,4 @@ class AdminBlock:
         }
 
     def __str__(self):
-        return "{}(height={}, hash={})".format(
-            self.__class__.__name__, self.header.height, self.lookup_hash.hex()
-        )
+        return "{}(height={}, hash={})".format(self.__class__.__name__, self.header.height, self.lookup_hash.hex())
