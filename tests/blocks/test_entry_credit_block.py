@@ -433,7 +433,8 @@ class TestEntryCreditBlock(unittest.TestCase):
                     # TODO: have a test case that checks server index ECID
                 elif isinstance(o, ChainCommit):
                     assert ChainCommit.ECID == expected_object.get("ecid")
-                    assert o.timestamp.hex() == expected_object.get("timestamp")
+                    expected_timestamp = bytes.fromhex(expected_object.get("timestamp"))
+                    assert o.timestamp == int.from_bytes(expected_timestamp, "big", signed=False)
                     assert o.chain_id_hash.hex() == expected_object.get("chain_id_hash")
                     assert o.commit_weld.hex() == expected_object.get("commit_weld")
                     assert o.entry_hash.hex() == expected_object.get("entry_hash")
@@ -442,7 +443,8 @@ class TestEntryCreditBlock(unittest.TestCase):
                     assert o.signature.hex() == expected_object.get("signature")
                 elif isinstance(o, EntryCommit):
                     assert EntryCommit.ECID == expected_object.get("ecid")
-                    assert o.timestamp.hex() == expected_object.get("timestamp")
+                    expected_timestamp = bytes.fromhex(expected_object.get("timestamp"))
+                    assert o.timestamp == int.from_bytes(expected_timestamp, "big", signed=False)
                     assert o.entry_hash.hex() == expected_object.get("entry_hash")
                     assert o.ec_spent == expected_object.get("ec_spent")
                     assert o.ec_public_key.hex() == expected_object.get("ec_public_key")

@@ -7,7 +7,7 @@ class ChainCommit:
     ECID = 0x02
     BITLENGTH = 200
 
-    timestamp: bytes
+    timestamp: int
     chain_id_hash: bytes
     commit_weld: bytes
     entry_hash: bytes
@@ -35,7 +35,7 @@ class ChainCommit:
     def marshal_for_signature(self):
         buf = bytearray()
         buf.append(0x00)
-        buf.extend(self.timestamp)
+        buf.extend(self.timestamp.to_bytes(6, "big", signed=False))
         buf.extend(self.chain_id_hash)
         buf.extend(self.commit_weld)
         buf.extend(self.entry_hash)
@@ -48,7 +48,7 @@ class ChainCommit:
         https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#chain-commit
         """
         data = raw[1:]  # skip single byte version, probably just 0x00 anyways
-        timestamp, data = data[:6], data[6:]
+        timestamp, data = int.from_bytes(data[:6], "big", signed=False), data[6:]
         chain_id_hash, data = data[:32], data[32:]
         commit_weld, data = data[:32], data[32:]
         entry_hash, data = data[:32], data[32:]
@@ -71,7 +71,7 @@ class ChainCommit:
 
     def to_dict(self):
         return {
-            "timestamp": self.timestamp.hex(),
+            "timestamp": self.timestamp,
             "chain_id_hash": self.chain_id_hash.hex(),
             "commit_weld": self.commit_weld.hex(),
             "entry_hash": self.entry_hash.hex(),
