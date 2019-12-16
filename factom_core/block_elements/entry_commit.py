@@ -63,7 +63,7 @@ class EntryCommit:
 
     def to_dict(self):
         return {
-            "timestamp": self.timestamp.hex(),
+            "timestamp": self.timestamp,
             "entry_hash": self.entry_hash.hex(),
             "ec_spent": self.ec_spent,
             "ec_public_key": self.ec_public_key.hex(),
