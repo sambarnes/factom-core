@@ -8,7 +8,7 @@ deps = {"factom-core": ["factom-keys", "plyvel",], "hydra": ["bottle", "click", 
 
 setup(
     name="factom-core",
-    version="0.0.7",
+    version="0.0.8",
     description="A python library for working with the primitives of the Factom blockchain",
     author="Sam Barnes",
     author_email="mistersamuelbarnes@gmail.com",

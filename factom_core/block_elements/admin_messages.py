@@ -21,6 +21,42 @@ class AdminMessage:
         raise NotImplementedError("Must be implemented by subclasses")
 
 
+def unmarshal_admin_message_of_type(admin_id: int, data: bytes) -> AdminMessage:
+    """Given an admin ID type and the marshalled message bytes, return the unmarshalled message."""
+    if admin_id == MinuteNumber.ADMIN_ID:
+        return MinuteNumber.unmarshal(data)
+    elif admin_id == DirectoryBlockSignature.ADMIN_ID:
+        return DirectoryBlockSignature.unmarshal(data)
+    elif admin_id == MatryoshkaHashReveal.ADMIN_ID:
+        return MatryoshkaHashReveal.unmarshal(data)
+    elif admin_id == MatryoshkaHashAddOrReplace.ADMIN_ID:
+        return MatryoshkaHashAddOrReplace.unmarshal(data)
+    elif admin_id == ServerCountIncrease.ADMIN_ID:
+        return ServerCountIncrease.unmarshal(data)
+    elif admin_id == AddFederatedServer.ADMIN_ID:
+        return AddFederatedServer.unmarshal(data)
+    elif admin_id == AddAuditServer.ADMIN_ID:
+        return AddAuditServer.unmarshal(data)
+    elif admin_id == RemoveFederatedServer.ADMIN_ID:
+        return RemoveFederatedServer.unmarshal(data)
+    elif admin_id == AddFederatedServerSigningKey.ADMIN_ID:
+        return AddFederatedServerSigningKey.unmarshal(data)
+    elif admin_id == AddFederatedServerBitcoinAnchorKey.ADMIN_ID:
+        return AddFederatedServerBitcoinAnchorKey.unmarshal(data)
+    elif admin_id == ServerFaultHandoff.ADMIN_ID:
+        return ServerFaultHandoff()
+    elif admin_id == CoinbaseDescriptor.ADMIN_ID:
+        return CoinbaseDescriptor.unmarshal(data)
+    elif admin_id == CoinbaseDescriptorCancel.ADMIN_ID:
+        return CoinbaseDescriptorCancel.unmarshal(data)
+    elif admin_id == AddAuthorityFactoidAddress.ADMIN_ID:
+        return AddAuthorityFactoidAddress.unmarshal(data)
+    elif admin_id == AddAuthorityEfficiency.ADMIN_ID:
+        return AddAuthorityEfficiency.unmarshal(data)
+    else:
+        raise ValueError("Invalid Admin ID")
+
+
 @dataclass
 class MinuteNumber(AdminMessage):
     """Minute marker (Deprecated in M2)"""
