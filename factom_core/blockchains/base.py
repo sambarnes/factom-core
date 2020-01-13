@@ -119,7 +119,9 @@ class Blockchain(BaseBlockchain):
         factoid_block = blocks.FactoidBlock(header, block.factoid_block)
 
         prev = self.db.get_admin_block(height=block.height - 1)
-        header = block.admin_block.construct_header(back_reference_hash=prev.back_reference_hash, height=block.height)
+        header = block.admin_block.construct_header(
+            prev_back_reference_hash=prev.back_reference_hash, height=block.height
+        )
         admin_block = blocks.AdminBlock(header, block.admin_block)
 
         # Compile all the above blocks and the previous directory block, into a new one

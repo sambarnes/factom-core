@@ -176,12 +176,12 @@ class AdminBlockBody:
 
         return AdminBlockBody(messages=messages), data
 
-    def construct_header(self, back_reference_hash: bytes, height: int) -> AdminBlockHeader:
+    def construct_header(self, prev_back_reference_hash: bytes, height: int) -> AdminBlockHeader:
         """
         Seals the admin block by constructing and returning its header
         """
         return AdminBlockHeader(
-            back_reference_hash=back_reference_hash,
+            prev_back_reference_hash=prev_back_reference_hash,
             height=height,
             expansion_area=b"",
             message_count=len(self.messages),
